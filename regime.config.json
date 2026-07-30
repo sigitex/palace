@@ -1,0 +1,20 @@
+{
+  "sources": {
+    "sigitex": "../templates"
+  },
+  "templates": [
+    "sigitex:project/package",
+    "sigitex:project/monorepo",
+    "sigitex:project/workspace",
+    "sigitex:tool/oxc",
+    "sigitex:tool/commitlint",
+    "sigitex:tool/husky",
+    "sigitex:workflow/mirror",
+    "sigitex:license/mit"
+  ],
+  "vars": {
+    "repo": "palace",
+    "copyright": "Sigitex",
+    "license": "MIT"
+  }
+}

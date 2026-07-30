@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "references": [
+    { "path": "./tsconfig.shared.json" },
+    { "path": "../../../toolkit/packages/ssjs/tsconfig.src.json" },
+    { "path": "../../../toolkit/packages/bind/tsconfig.src.json" },
+    { "path": "../../../route/tsconfig.src.json" },
+    { "path": "../../../outlaw/tsconfig.src.json" }
+  ],
+  "compilerOptions": {
+    "composite": true
+  },
+  "include": [
+    "server"
+  ]
+}
