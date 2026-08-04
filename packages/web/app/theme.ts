@@ -9,7 +9,7 @@ const theme = createTheme({
       }
     }
   },
-  primaryColor: "green",
+  primaryColor: "violet",
   primaryShade: {
     light: 9,
     dark: 7,
