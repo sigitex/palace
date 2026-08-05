@@ -24,6 +24,11 @@ export function server(command: string[]): Plugin {
     process.exit(130)
   }
 
+  function terminate() {
+    kill()
+    process.exit(143)
+  }
+
   return {
     name: "server",
     configureServer() {
@@ -42,10 +47,12 @@ export function server(command: string[]): Plugin {
 
       process.once("exit", kill)
       process.once("SIGINT", interrupt)
+      process.once("SIGTERM", terminate)
     },
     buildEnd() {
       process.off("exit", kill)
       process.off("SIGINT", interrupt)
+      process.off("SIGTERM", terminate)
       kill()
     },
   }

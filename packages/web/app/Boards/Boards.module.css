@@ -1,0 +1,12 @@
+.page {
+  min-width: 0;
+  height: calc(100dvh - var(--app-shell-header-height, 0px) - 2rem);
+  min-height: 32rem;
+}
+
+@media (max-width: 47.99em) {
+  .page {
+    height: calc(100dvh - var(--app-shell-header-height, 0px) - 2rem);
+    min-height: 0;
+  }
+}

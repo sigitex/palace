@@ -3,11 +3,20 @@ import { defineConfig, type Plugin } from "vite"
 import { server } from "./server.vite.plugin"
 
 export default defineConfig({
-  plugins: [react(), ...dev(server(["bun", "run", "serve"]))],
+  plugins: [
+    react(),
+    ...dev(
+      server([
+        "bun",
+        "run",
+        process.env.PALACE_BROWSER_TEST ? "serve:test" : "serve",
+      ]),
+    ),
+  ],
   server: {
     proxy: {
-      "/api": "http://localhost:3000"
-    }
+      "/api": `http://localhost:${process.env.PALACE_SERVER_PORT ?? 3000}`,
+    },
   },
   resolve: {
     tsconfigPaths: true,
@@ -16,5 +25,5 @@ export default defineConfig({
 
 function dev(plugin: Plugin) {
   // TODO: turn off in prod
-  return [plugin]
+  return process.env.PALACE_NO_SERVER_PLUGIN ? [] : [plugin]
 }

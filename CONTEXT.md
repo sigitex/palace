@@ -32,8 +32,8 @@ A unit of work or interest on a Board. A Task has one place in Board Order, may 
 _Avoid_: Card, item
 
 **Complete Task**:
-A Task marked complete that retains its Phase and appears in Archive. Reopening it returns it to that retained Phase.
-_Avoid_: Archived Task
+A Task marked complete that retains its Phase and appears in Complete. Completion overrides Phase for current placement and state presentation. Reopening it returns it to that retained Phase.
+_Avoid_: Deleted Task
 
 **Phase**:
 A freely assignable category used to organize Tasks. Phase order defines lane presentation, not allowed transitions or a separate Task order.
@@ -47,7 +47,7 @@ _Avoid_: List order, lane order
 The flat presentation of all Tasks in Board Order.
 
 **Phases View**:
-The presentation of Tasks grouped into Phase lanes, Unphased, and Archive while preserving Board Order.
+The presentation of Tasks grouped into fixed Incomplete and Complete lanes around configured Phase lanes while preserving Board Order.
 
 **Workspace Access**:
 A group grant inherited by every Board in a Workspace. Read views content, write manages all Board, Phase, and Task content, and manage additionally changes Workspace Access; Boards have no separate permissions.
@@ -60,6 +60,6 @@ A user with write-level Workspace Access. A Workspace Writer manages Board, Phas
 A user with manage-level Workspace Access. A Workspace Manager has all Workspace Writer rights and changes Workspace Access, but does not control Workspace identity or lifecycle.
 _Avoid_: Workspace administrator, Board administrator
 
-**Archive**:
-The Phases view of complete Tasks. Archive is reversible completion, not deleted-object storage or a recovery mechanism.
+**Complete**:
+The fixed Phases view projection of Complete Tasks. Complete is reversible Task state, not deleted-object storage or a recovery mechanism.
 _Avoid_: Trash, recycle bin

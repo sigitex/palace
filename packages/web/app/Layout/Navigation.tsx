@@ -1,18 +1,20 @@
 import { AppShell, ScrollArea } from "@mantine/core"
 import NavigationLink from "./NavigationLink"
 import Auth from "@/common/Auth"
-import { Icons } from "@/common/Icons";
+import { Icons } from "@/common/Icons"
+import { BoardsPath } from "shared/BoardsPath"
 
 export default function Nav() {
   return (
     <AppShell.Navbar p="md">
       <AppShell.Section grow component={ScrollArea}>
         <NavigationLink to="/" label="Home" Icon={Icons.Home} />
-        <Auth allow="finch">
+        <Auth>
           <NavigationLink
-            to="/boards"
+            to={BoardsPath.index}
             label="Boards"
             Icon={Icons.Boards}
+            nested
           />
         </Auth>
         <Auth allow="finch">
@@ -37,11 +39,7 @@ export default function Nav() {
           />
         </Auth>
         <Auth allow="finch">
-          <NavigationLink
-            to="/bots"
-            label="Bots"
-            Icon={Icons.Bots}
-          />
+          <NavigationLink to="/bots" label="Bots" Icon={Icons.Bots} />
         </Auth>
         <Auth allow="finch">
           <NavigationLink

@@ -1,0 +1,13 @@
+.phaseBadge {
+  max-width: 12rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--mantine-radius-sm);
+  background: var(--mantine-color-gray-light);
+}
+
+@media (max-width: 47.99em) {
+  .phaseBadge {
+    grid-column: 3;
+    justify-self: start;
+  }
+}

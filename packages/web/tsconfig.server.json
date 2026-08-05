@@ -8,9 +8,8 @@
     { "path": "../../../outlaw/tsconfig.src.json" }
   ],
   "compilerOptions": {
-    "composite": true
+    "composite": true,
+    "types": ["bun"]
   },
-  "include": [
-    "server"
-  ]
+  "include": ["server"]
 }

@@ -1,0 +1,78 @@
+.listSearch {
+  flex: 1 1 15rem;
+  max-width: 26rem;
+}
+
+.phaseFilters {
+  flex-wrap: wrap;
+}
+
+.taskList {
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.taskRow {
+  display: grid;
+  grid-template-columns:
+    auto auto minmax(0, 1fr) minmax(8rem, auto)
+    auto auto auto;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  min-width: 0;
+  padding: 0.65rem;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  background: var(--mantine-color-body);
+}
+
+.dragHandle {
+  flex: 0 0 auto;
+  cursor: grab;
+  touch-action: none;
+  background: var(--mantine-color-default-hover);
+  color: var(--mantine-color-dimmed);
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragSourceActive {
+  opacity: 0.4;
+}
+
+.dropTargetBefore {
+  box-shadow: inset 0 3px 0 var(--mantine-primary-color-filled);
+}
+
+.dropTargetAfter {
+  box-shadow: inset 0 -3px 0 var(--mantine-primary-color-filled);
+}
+
+.taskRow:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: -2px;
+}
+
+.taskSelected {
+  background: var(--task-background, var(--mantine-primary-color-light));
+}
+
+.taskComplete {
+  color: var(--mantine-color-dimmed);
+}
+
+.taskTitle {
+  min-width: 0;
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 47.99em) {
+  .taskRow {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+  }
+
+  .taskRow > :nth-last-child(2) {
+    display: none;
+  }
+}

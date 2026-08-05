@@ -1,0 +1,17 @@
+.swatchButton,
+.pickerSelected {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: var(--mantine-radius-sm);
+}
+
+.swatchButton {
+  border: 1px solid var(--mantine-color-default-border);
+}
+
+.pickerSelected {
+  background: var(--mantine-primary-color-light);
+  box-shadow: inset 0 0 0 2px var(--mantine-primary-color-filled);
+}

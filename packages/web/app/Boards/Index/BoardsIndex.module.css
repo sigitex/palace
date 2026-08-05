@@ -1,0 +1,83 @@
+.index {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.8fr) minmax(18rem, 1.2fr);
+  min-height: min(42rem, calc(100vh - 7rem));
+  border: 1px solid var(--mantine-color-default-border);
+  background: var(--mantine-color-body);
+}
+
+.workspacePane,
+.boardPane {
+  min-width: 0;
+  padding: var(--mantine-spacing-md);
+}
+
+.workspacePane {
+  border-right: 1px solid var(--mantine-color-default-border);
+  background: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-7)
+  );
+}
+
+.resource {
+  width: 100%;
+  border: 0;
+  border-left: 3px solid transparent;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  padding: 0.65rem 0.7rem;
+  cursor: pointer;
+}
+
+.resource:hover,
+.resource:focus-visible {
+  background: var(--resource-background, var(--mantine-color-default-hover));
+  outline: none;
+}
+
+.resourceTinted {
+  border-left-color: var(--resource-color, var(--mantine-color-gray-5));
+  background: color-mix(
+    in srgb,
+    var(--resource-background, var(--mantine-color-gray-light)) 70%,
+    var(--mantine-color-body)
+  );
+}
+
+.selected {
+  border-left-color: var(--resource-color, var(--mantine-primary-color-filled));
+  background: var(--resource-background, var(--mantine-primary-color-light));
+}
+
+.resourceTitle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobileBack {
+  display: none;
+}
+
+@media (max-width: 47.99em) {
+  .index {
+    display: block;
+    min-height: 0;
+  }
+
+  .workspacePane {
+    border-right: 0;
+  }
+
+  .index:not(.hasWorkspace) .boardPane,
+  .hasWorkspace .workspacePane {
+    display: none;
+  }
+
+  .mobileBack {
+    display: inline-flex;
+  }
+}

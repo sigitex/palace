@@ -1,5 +1,6 @@
 import "@mantine/core/styles.css"
 import "@mantine/notifications/styles.css"
+import "@phosphor-icons/web/duotone"
 
 import React from "react"
 import ReactDOM from "react-dom/client"

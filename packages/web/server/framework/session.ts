@@ -1,4 +1,5 @@
 import type { DB } from "$/database"
+import type { Users } from "$/services/Users"
 import { Constants } from "shared/Constants"
 import type { RouteMiddleware, RequestContext, Cookies } from "@sigitex/route"
 
@@ -10,7 +11,9 @@ export function session(): RouteMiddleware {
       cookies,
       bind,
       db,
-    }: RequestContext & { cookies: Cookies; db: DB }) {
+      users,
+    }: RequestContext & { cookies: Cookies; db: DB; users: Users }) {
+      bind({ user: null, groups: null })
       const token = cookies.get(Constants.session.cookie)
       if (!token) {
         return
@@ -29,7 +32,7 @@ export function session(): RouteMiddleware {
       if (!user) {
         return
       }
-      const groups = ["finch", "palace-admins"]
+      const groups = await users.groups(user.id)
       bind({ user, groups })
     },
   }

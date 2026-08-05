@@ -15,4 +15,22 @@ export class Users {
       .fetch()
     return user
   }
+
+  async groups(userID: number) {
+    const memberships = await this.db.member
+      .select("group")
+      .where("user", "=", userID)
+      .fetch()
+    const groups = await Promise.all(
+      memberships.map(async ({ group }) => {
+        const [row] = await this.db.group
+          .select("uid")
+          .where("id", "=", group)
+          .limit(1)
+          .fetch()
+        return row?.uid
+      }),
+    )
+    return groups.filter((uid): uid is string => uid !== undefined).sort()
+  }
 }

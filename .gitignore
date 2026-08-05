@@ -4,3 +4,5 @@ dist
 .opencode
 packages/*/lib
 *.sqlite
+playwright-report
+test-results

@@ -8,10 +8,12 @@ export default function NavigationLink({
   to,
   label,
   Icon,
+  nested = false,
 }: {
   readonly to: string
   readonly label?: ReactNode
   readonly Icon?: IconType
+  readonly nested?: boolean
 }) {
   const [pathname] = useLocation()
   const ui = useUI()
@@ -22,7 +24,9 @@ export default function NavigationLink({
       to={to}
       label={label}
       leftSection={Icon && <Icon size="2rem" stroke="1.5" />}
-      active={pathname === to}
+      active={
+        pathname === to || (nested && pathname.startsWith(`${to}/`))
+      }
       onClick={() => ui.toggleNav()}
     />
   )
