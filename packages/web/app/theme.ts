@@ -1,6 +1,7 @@
 import { createTheme } from "@mantine/core"
+import { themeToVars } from "@mantine/vanilla-extract"
 
-const theme = createTheme({
+export const theme = createTheme({
   defaultRadius: "xs",
   components: {
     Button: {
@@ -9,11 +10,11 @@ const theme = createTheme({
       }
     }
   },
-  primaryColor: "violet",
+  primaryColor: "cyan",
   primaryShade: {
     light: 9,
     dark: 7,
   },
 })
 
-export default theme
+export const vars = themeToVars(theme)

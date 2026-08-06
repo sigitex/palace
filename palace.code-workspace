@@ -23,5 +23,6 @@
 			"README.md": "LICENSE, LICENSE.md, AGENTS.md, CLAUDE.md, CONTEXT.md",
 		},
 		"js/ts.tsdk.path": "../route/node_modules/@typescript/native-preview",
+		"js/ts.experimental.useTsgo": true,
 	},
 }
