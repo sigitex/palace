@@ -1,18 +1,19 @@
 import { NavLink } from "@mantine/core"
-import type { IconType } from "react-icons"
 import type { ReactNode } from "react"
 import { Link as RouteLink, useLocation } from "wouter"
 import { useUI } from "@/state"
+import { Icon } from "@/common/Icon"
+import type { BoardIcon as IconName } from "shared/models"
 
 export default function NavigationLink({
   to,
   label,
-  Icon,
+  icon,
   nested = false,
 }: {
   readonly to: string
   readonly label?: ReactNode
-  readonly Icon?: IconType
+  readonly icon?: IconName
   readonly nested?: boolean
 }) {
   const [pathname] = useLocation()
@@ -23,7 +24,7 @@ export default function NavigationLink({
       component={RouteLink}
       to={to}
       label={label}
-      leftSection={Icon && <Icon size="2rem" stroke="1.5" />}
+      leftSection={icon && <Icon name={icon} size="2rem" />}
       active={
         pathname === to || (nested && pathname.startsWith(`${to}/`))
       }

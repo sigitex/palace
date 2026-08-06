@@ -1,7 +1,7 @@
 import classes from "@/Boards/Task/TaskSelectors.module.css"
 import { BoardIcon } from "@/common/BoardIcon"
 import { Group, Menu, Text, UnstyledButton } from "@mantine/core"
-import { PiCheckCircle, PiCircleDashed } from "react-icons/pi"
+import { Icon } from "@/common/Icon"
 import type { BoardPhase, BoardTask } from "shared/models"
 
 export function TaskStateSelector({
@@ -31,11 +31,11 @@ export function TaskStateSelector({
     >
       <Group gap={6} wrap="nowrap">
         {task.complete ? (
-          <PiCheckCircle aria-hidden />
+          <Icon name="check-circle" aria-hidden />
         ) : selected?.icon ? (
           <BoardIcon icon={selected.icon} aria-hidden />
         ) : !selected ? (
-          <PiCircleDashed aria-hidden />
+          <Icon name="circle-dashed" aria-hidden />
         ) : null}
         <Text size="sm" fw={600} truncate>
           {label}
@@ -52,7 +52,7 @@ export function TaskStateSelector({
       <Menu.Target>{control}</Menu.Target>
       <Menu.Dropdown>
         <Menu.Item
-          leftSection={<PiCircleDashed />}
+          leftSection={<Icon name="circle-dashed" />}
           onClick={() => onChange({ complete: false, phase: null })}
         >
           Incomplete
@@ -77,7 +77,7 @@ export function TaskStateSelector({
         ))}
         <Menu.Divider />
         <Menu.Item
-          leftSection={<PiCheckCircle />}
+          leftSection={<Icon name="check-circle" />}
           onClick={() =>
             onChange({ complete: true, phase: task.phase })
           }

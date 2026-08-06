@@ -1,11 +1,8 @@
 // oxlint-disable eslint/complexity
-import { BoardsQuery } from "@/Boards/BoardsQuery"
 import classes from "@/Boards/Index/BoardsIndex.module.css"
 import { WorkspaceDrawer } from "@/Boards/Index/WorkspaceDrawer"
-import { BoardsState } from "@/Boards/State/BoardsState"
 import { BoardIcon } from "@/common/BoardIcon"
-import { call } from "@/common/call"
-import { useSession } from "@/state"
+import { useBoards, useBoardsView, useSession } from "@/state"
 import {
   ActionIcon,
   Button,
@@ -16,18 +13,20 @@ import {
   Title,
 } from "@mantine/core"
 import { useEffect, useState, type KeyboardEvent } from "react"
-import { PiArrowLeft, PiGear, PiPlus } from "react-icons/pi"
+import { Icon } from "@/common/Icon"
 import { useLocation } from "wouter"
 import { BoardsPath } from "shared/BoardsPath"
 import type { Board, Workspace } from "shared/models"
 
 export function BoardsIndex({
   workspaces,
-  boards,
+  boardList,
   selectedWorkspace,
 }: BoardsIndex.Props) {
   const [, navigate] = useLocation()
   const session = useSession()
+  const boards = useBoards()
+  const view = useBoardsView()
   const [workspaceSettings, setWorkspaceSettings] = useState(false)
   const [draft, setDraft] = useState<"workspace" | "board" | null>(
     null,
@@ -44,38 +43,8 @@ export function BoardsIndex({
   const canWrite =
     selected?.access === "write" || selected?.access === "manage"
   const canManage = selected?.access === "manage"
-  const workspaceAction = BoardsQuery.useAction(
-    (work: () => Promise<unknown>) => work(),
-    {
-      invalidateExact: [BoardsQuery.keys.exact.workspaces],
-      invalidatePrefix: selected
-        ? [BoardsQuery.keys.prefix.aggregates(selected.slug)]
-        : [],
-    },
-  )
-  const boardListAction = BoardsQuery.useAction(
-    (work: () => Promise<unknown>) => work(),
-    {
-      invalidateExact: [
-        BoardsQuery.keys.exact.boards(selectedWorkspace ?? ""),
-      ],
-    },
-  )
-  const boardUpdateAction = BoardsQuery.useAction(
-    (work: () => Promise<unknown>) => work(),
-    {
-      invalidateExact: [
-        BoardsQuery.keys.exact.boards(selectedWorkspace ?? ""),
-        BoardsQuery.keys.exact.aggregate(
-          selectedWorkspace ?? "",
-          renamingBoard ?? "",
-        ),
-      ],
-    },
-  )
-
   useEffect(() => {
-    BoardsState.setBoard(null)
+    view.setBoard(null)
   }, [])
 
   useEffect(() => {
@@ -91,13 +60,13 @@ export function BoardsIndex({
           ?.focus(),
       )
     }
-    if (pane === "board" && selected && boards.length > 0) {
+    if (pane === "board" && selected && boardList.length > 0) {
       sessionStorage.removeItem("boards-focus-pane")
       requestAnimationFrame(() =>
         document.querySelector<HTMLElement>("[data-board]")?.focus(),
       )
     }
-  }, [boards, selected, selectedWorkspace])
+  }, [boardList, selected, selectedWorkspace])
 
   function workspaceKeys(event: KeyboardEvent<HTMLDivElement>) {
     if (typing(event)) return
@@ -125,7 +94,7 @@ export function BoardsIndex({
     } else if (event.key === "ArrowRight" && focusedSlug) {
       event.preventDefault()
       sessionStorage.setItem("boards-focus-pane", "board")
-      if (focusedSlug === selectedWorkspace && boards.length > 0) {
+      if (focusedSlug === selectedWorkspace && boardList.length > 0) {
         sessionStorage.removeItem("boards-focus-pane")
         document.querySelector<HTMLElement>("[data-board]")?.focus()
       } else {
@@ -149,14 +118,14 @@ export function BoardsIndex({
       target.closest<HTMLElement>("[data-board]")?.dataset.board
     const current = Math.max(
       0,
-      boards.findIndex(({ slug }) => slug === currentSlug),
+      boardList.findIndex(({ slug }) => slug === currentSlug),
     )
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault()
       const delta = event.key === "ArrowDown" ? 1 : -1
       const next =
-        boards[
-          Math.max(0, Math.min(boards.length - 1, current + delta))
+        boardList[
+          Math.max(0, Math.min(boardList.length - 1, current + delta))
         ]
       if (next) {
         document
@@ -206,7 +175,7 @@ export function BoardsIndex({
                 aria-label="New workspace"
                 onClick={() => setDraft("workspace")}
               >
-                <PiPlus />
+                <Icon name="plus" />
               </ActionIcon>
             )}
           </Group>
@@ -230,15 +199,13 @@ export function BoardsIndex({
               onCancel={() => setDraft(null)}
               onSave={async (name) => {
                 const slug = slugify(name)
-                await workspaceAction.mutateAsync(() =>
-                  call.boards.workspace.create({
-                    name,
-                    slug,
-                    color: null,
-                    icon: null,
-                    manager_group: 2,
-                  }),
-                )
+                await boards.createWorkspace({
+                  name,
+                  slug,
+                  color: null,
+                  icon: null,
+                  manager_group: 2,
+                })
                 setDraft(null)
                 navigate(BoardsPath.workspace(slug))
               }}
@@ -250,15 +217,12 @@ export function BoardsIndex({
               initial={selected.name}
               onCancel={() => setRenaming(null)}
               onSave={async (name) => {
-                await workspaceAction.mutateAsync(() =>
-                  call.boards.workspace.update({
-                    workspace: selected.slug,
-                    name,
-                    slug: selected.slug,
-                    color: selected.color,
-                    icon: selected.icon,
-                  }),
-                )
+                await boards.updateWorkspace(selected.slug, {
+                  name,
+                  slug: selected.slug,
+                  color: selected.color,
+                  icon: selected.icon,
+                })
                 setRenaming(null)
               }}
             />
@@ -275,7 +239,7 @@ export function BoardsIndex({
               <Button
                 className={classes.mobileBack}
                 variant="subtle"
-                leftSection={<PiArrowLeft />}
+                leftSection={<Icon name="arrow-left" />}
                 onClick={() => navigate(BoardsPath.index)}
               >
                 Workspaces
@@ -288,7 +252,7 @@ export function BoardsIndex({
                   aria-label="New board"
                   onClick={() => setDraft("board")}
                 >
-                  <PiPlus />
+                  <Icon name="plus" />
                 </ActionIcon>
               )}
               {canManage && (
@@ -296,17 +260,17 @@ export function BoardsIndex({
                   aria-label="Workspace settings"
                   onClick={() => setWorkspaceSettings(true)}
                 >
-                  <PiGear />
+                  <Icon name="gear" />
                 </ActionIcon>
               )}
             </Group>
           </Group>
           {!selected && <Text c="dimmed">Select a workspace.</Text>}
-          {selected && boards.length === 0 && (
+          {selected && boardList.length === 0 && (
             <Text c="dimmed">No boards in this workspace.</Text>
           )}
           {selected &&
-            boards.map((board) =>
+            boardList.map((board) =>
               renamingBoard === board.slug ? (
                 <InlineName
                   key={board.id}
@@ -314,15 +278,15 @@ export function BoardsIndex({
                   initial={board.name}
                   onCancel={() => setRenamingBoard(null)}
                   onSave={async (name) => {
-                    await boardUpdateAction.mutateAsync(() =>
-                      call.boards.board.update({
-                        workspace: selected.slug,
-                        board: board.slug,
+                    await boards.updateBoard(
+                      selected.slug,
+                      board.slug,
+                      {
                         name,
                         slug: board.slug,
                         color: board.color,
                         icon: board.icon,
-                      }),
+                      },
                     )
                     setRenamingBoard(null)
                   }}
@@ -347,15 +311,12 @@ export function BoardsIndex({
               onCancel={() => setDraft(null)}
               onSave={async (name) => {
                 const slug = slugify(name)
-                await boardListAction.mutateAsync(() =>
-                  call.boards.board.create({
-                    workspace: selected.slug,
-                    name,
-                    slug,
-                    color: null,
-                    icon: null,
-                  }),
-                )
+                await boards.createBoard(selected.slug, {
+                  name,
+                  slug,
+                  color: null,
+                  icon: null,
+                })
                 setDraft(null)
                 navigate(BoardsPath.board(selected.slug, slug))
               }}
@@ -377,7 +338,7 @@ export function BoardsIndex({
 export namespace BoardsIndex {
   export type Props = {
     workspaces: Workspace[]
-    boards: Board[]
+    boardList: Board[]
     selectedWorkspace?: string
   }
 }

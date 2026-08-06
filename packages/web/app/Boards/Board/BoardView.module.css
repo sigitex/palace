@@ -9,7 +9,6 @@
   flex-wrap: wrap;
   padding: var(--mantine-spacing-md);
   border-left: 4px solid var(--board-color, var(--mantine-primary-color-filled));
-  background: var(--board-background, var(--mantine-color-default-hover));
 }
 
 .boardTabs {
@@ -26,8 +25,11 @@
 }
 
 .listPanel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .phasesPanel {

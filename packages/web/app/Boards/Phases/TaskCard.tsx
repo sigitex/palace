@@ -7,10 +7,11 @@ import {
   Group,
   Paper,
   Text,
+  TextInput,
   UnstyledButton,
 } from "@mantine/core"
 import { memo } from "react"
-import { PiDotsSixVertical, PiTrash } from "react-icons/pi"
+import { Icon } from "@/common/Icon"
 import type { BoardPhase, BoardTask } from "shared/models"
 
 export type TaskCardCommands = {
@@ -19,6 +20,8 @@ export type TaskCardCommands = {
   move: (taskID: number, destination: TaskMenu.Destination) => void
   step: (taskID: number, lane: string, direction: -1 | 1) => void
   delete: (taskID: number) => Promise<unknown>
+  saveTitle: (taskID: number, title: string) => Promise<unknown>
+  cancelEdit: () => void
 }
 
 export type TaskCardProps = {
@@ -28,8 +31,9 @@ export type TaskCardProps = {
   lane: string
   writable: boolean
   selected: boolean
+  editing: boolean
+  moving: boolean
   dragHandle: usePointerDrag.Handle
-  position: string
   commands: TaskCardCommands
 }
 
@@ -41,15 +45,16 @@ export const TaskCard = memo(
     lane,
     writable,
     selected,
+    editing,
+    moving,
     dragHandle,
-    position,
     commands,
   }: TaskCardProps) => {
     return (
       <Paper
         withBorder
         p="xs"
-        className={`${classes.taskCard} ${selected ? classes.taskSelected : ""} ${task.complete ? classes.taskComplete : ""}`}
+        className={`${classes.taskCard} ${selected ? classes.taskSelected : ""} ${task.complete ? classes.taskComplete : ""} ${moving ? classes.taskMoving : ""}`}
         role="option"
         aria-selected={selected}
         data-task-id={task.id}
@@ -69,40 +74,75 @@ export const TaskCard = memo(
         }}
         onDoubleClick={() => commands.open(task.id)}
       >
-        <Group align="flex-start" wrap="nowrap">
-          {writable && (
-            <ActionIcon
-              variant="subtle"
-              className={classes.dragHandle}
-              aria-label={`Drag ${task.title}; ${position}`}
-              onPointerDown={(event) => {
-                commands.select(task.id)
-                dragHandle.onPointerDown(event)
+        <Group align="flex-start" wrap="nowrap" gap="xs">
+          {editing ? (
+            <TextInput
+              autoFocus
+              aria-label="Task title"
+              defaultValue={task.title}
+              onFocus={(event) => event.currentTarget.select()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  commands.cancelEdit()
+                }
+                if (
+                  event.key === "Enter" &&
+                  event.currentTarget.value.trim()
+                ) {
+                  commands.saveTitle(
+                    task.id,
+                    event.currentTarget.value.trim(),
+                  )
+                }
               }}
-              onPointerMove={dragHandle.onPointerMove}
-              onPointerUp={dragHandle.onPointerUp}
-              onPointerCancel={dragHandle.onPointerCancel}
+              style={{ flex: 1 }}
+            />
+          ) : (
+            <UnstyledButton
+              className={classes.taskTitle}
+              style={{ flex: 1 }}
+              onClick={() => commands.select(task.id)}
+              onDoubleClick={(event) => {
+                event.stopPropagation()
+                commands.open(task.id)
+              }}
+              onPointerDown={
+                writable
+                  ? (event) => dragHandle.onPointerDown(event)
+                  : undefined
+              }
+              onPointerMove={
+                writable ? dragHandle.onPointerMove : undefined
+              }
+              onPointerUp={
+                writable ? dragHandle.onPointerUp : undefined
+              }
+              onPointerCancel={
+                writable ? dragHandle.onPointerCancel : undefined
+              }
+              onLostPointerCapture={
+                writable ? dragHandle.onLostPointerCapture : undefined
+              }
             >
-              <PiDotsSixVertical />
-            </ActionIcon>
+              <Text
+                fw={600}
+                td={task.complete ? "line-through" : undefined}
+              >
+                {task.title}
+              </Text>
+            </UnstyledButton>
           )}
-          <UnstyledButton
-            className={classes.taskTitle}
-            onClick={() => commands.select(task.id)}
-            onDoubleClick={(event) => {
-              event.stopPropagation()
-              commands.open(task.id)
-            }}
-          >
-            <Text
-              fw={600}
-              td={task.complete ? "line-through" : undefined}
-            >
-              {task.title}
-            </Text>
-          </UnstyledButton>
           {writable && (
-            <>
+            <span
+              onPointerDown={(e) => e.stopPropagation()}
+              style={{
+                display: "inline-flex",
+                gap: "var(--mantine-spacing-xs)",
+                alignItems: "center",
+              }}
+            >
               <TaskMenu
                 task={task}
                 phases={phases}
@@ -114,7 +154,7 @@ export const TaskCard = memo(
                 }
               />
               <DeletePopover
-                label={`task “${task.title}”`}
+                label={`task "${task.title}"`}
                 onDelete={() => commands.delete(task.id)}
               >
                 <ActionIcon
@@ -122,10 +162,10 @@ export const TaskCard = memo(
                   variant="subtle"
                   aria-label={`Delete ${task.title}`}
                 >
-                  <PiTrash />
+                  <Icon name="trash" />
                 </ActionIcon>
               </DeletePopover>
-            </>
+            </span>
           )}
         </Group>
       </Paper>

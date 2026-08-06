@@ -7,16 +7,27 @@ import {
 } from "react"
 
 const ACTIVATION_DISTANCE = 5
-const SCROLL_EDGE = 48
 
 export function usePointerDrag<Source, Target>({
   resolveTarget,
   onDrop,
   sourceClassName,
+  autoScroll: userConfig,
 }: usePointerDrag.Options<Source, Target>) {
-  const options = useRef({ resolveTarget, onDrop, sourceClassName })
+  const scrollConfig = {
+    axis: "both",
+    zoneSize: 48,
+    speed: 1,
+    ...userConfig,
+  } as Required<usePointerDrag.AutoScrollConfig>
+  const options = useRef({
+    resolveTarget,
+    onDrop,
+    sourceClassName,
+    scrollConfig,
+  })
   const session = useRef<DragSession<Source, Target> | null>(null)
-  options.current = { resolveTarget, onDrop, sourceClassName }
+  options.current = { resolveTarget, onDrop, sourceClassName, scrollConfig }
 
   useEffect(
     () => () => {
@@ -43,10 +54,12 @@ export function usePointerDrag<Source, Target>({
           sourceClassName: null,
           target: null,
           latestPoint: null,
+          lastPoint: null,
           ghost: null,
           scrollContainer: null,
           indicators: [],
           frame: null,
+          scrollFrame: null,
         }
       },
       onPointerMove(event: ReactPointerEvent<HTMLElement>) {
@@ -105,9 +118,10 @@ export function usePointerDrag<Source, Target>({
     const point = current.latestPoint
     if (!point) return
     current.latestPoint = null
+    current.lastPoint = point
 
     positionGhost(current.ghost, point)
-    autoScroll(current.scrollContainer, point)
+    autoScroll(current.scrollContainer, point, options.current.scrollConfig)
     const resolution = options.current.resolveTarget(
       document.elementFromPoint(point.x, point.y),
       current.source,
@@ -115,6 +129,34 @@ export function usePointerDrag<Source, Target>({
     )
     current.target = resolution?.value ?? null
     applyIndicators(current, resolution?.indicators ?? [])
+
+    const scrollConfig = options.current.scrollConfig
+    if (autoScroll(current.scrollContainer, point, scrollConfig)) {
+      if (current.scrollFrame === null) {
+        current.scrollFrame = requestAnimationFrame(() => scrollLoop(current))
+      }
+    } else {
+      stopScrollLoop(current)
+    }
+  }
+
+  function scrollLoop(current: DragSession<Source, Target>) {
+    if (current.scrollFrame === null) return
+    current.scrollFrame = null
+    const point = current.latestPoint ?? current.lastPoint
+    if (!point || !current.scrollContainer) return
+    if (
+      autoScroll(current.scrollContainer, point, options.current.scrollConfig)
+    ) {
+      current.scrollFrame = requestAnimationFrame(() => scrollLoop(current))
+    }
+  }
+
+  function stopScrollLoop(current: DragSession<Source, Target>) {
+    if (current.scrollFrame !== null) {
+      cancelAnimationFrame(current.scrollFrame)
+      current.scrollFrame = null
+    }
   }
 
   function finish(event: ReactPointerEvent<HTMLElement>) {
@@ -149,6 +191,7 @@ export function usePointerDrag<Source, Target>({
 
   function cleanup(current: DragSession<Source, Target>) {
     if (current.frame !== null) cancelAnimationFrame(current.frame)
+    stopScrollLoop(current)
     current.ghost?.remove()
     if (current.sourceElement && current.sourceClassName) {
       current.sourceElement.classList.remove(current.sourceClassName)
@@ -210,6 +253,13 @@ export namespace usePointerDrag {
       target: TargetValue,
     ) => undefined | Promise<unknown>
     sourceClassName?: string
+    autoScroll?: AutoScrollConfig
+  }
+
+  export type AutoScrollConfig = {
+    axis?: "x" | "y" | "both"
+    zoneSize?: number
+    speed?: number
   }
 
   export type Handle = {
@@ -232,10 +282,12 @@ type DragSession<Source, Target> = {
   sourceClassName: string | null
   target: Target | null
   latestPoint: usePointerDrag.Point | null
+  lastPoint: usePointerDrag.Point | null
   ghost: HTMLElement | null
   scrollContainer: HTMLElement | null
   indicators: readonly usePointerDrag.Indicator[]
   frame: number | null
+  scrollFrame: number | null
 }
 
 function createGhost(handle: HTMLElement, source: HTMLElement | null) {
@@ -288,7 +340,10 @@ function positionGhost(ghost: HTMLElement | null, point: usePointerDrag.Point) {
 function autoScroll(
   container: HTMLElement | null,
   point: usePointerDrag.Point,
-) {
+  config: Required<usePointerDrag.AutoScrollConfig>,
+): boolean {
+  const scrollX = config.axis === "x" || config.axis === "both"
+  const scrollY = config.axis === "y" || config.axis === "both"
   if (container) {
     const bounds = container.getBoundingClientRect()
     if (
@@ -297,25 +352,66 @@ function autoScroll(
       point.y >= bounds.top &&
       point.y <= bounds.bottom
     ) {
-      const left = edgeSpeed(point.x, bounds.left, bounds.right)
-      const top = edgeSpeed(point.y, bounds.top, bounds.bottom)
+      const left = scrollX
+        ? edgeSpeed(
+            point.x,
+            bounds.left,
+            bounds.right,
+            config.zoneSize,
+            config.speed,
+          )
+        : 0
+      const top = scrollY
+        ? edgeSpeed(
+            point.y,
+            bounds.top,
+            bounds.bottom,
+            config.zoneSize,
+            config.speed,
+          )
+        : 0
       if (left !== 0 || top !== 0) {
+        const beforeLeft = container.scrollLeft
+        const beforeTop = container.scrollTop
         container.scrollBy({ left, top, behavior: "auto" })
+        return (
+          container.scrollLeft !== beforeLeft ||
+          container.scrollTop !== beforeTop
+        )
       }
-      return
+      return false
     }
   }
 
-  const top = edgeSpeed(point.y, 0, globalThis.innerHeight)
-  if (top !== 0) globalThis.scrollBy({ top, behavior: "auto" })
+  if (scrollY) {
+    const top = edgeSpeed(
+      point.y,
+      0,
+      globalThis.innerHeight,
+      config.zoneSize,
+      config.speed,
+    )
+    if (top !== 0) {
+      const beforeTop = globalThis.scrollY
+      globalThis.scrollBy({ top, behavior: "auto" })
+      return globalThis.scrollY !== beforeTop
+    }
+  }
+  return false
 }
 
-function edgeSpeed(value: number, start: number, end: number) {
-  if (value < start + SCROLL_EDGE) {
-    return -Math.ceil((start + SCROLL_EDGE - value) / 4)
+function edgeSpeed(
+  value: number,
+  start: number,
+  end: number,
+  zone: number,
+  speed: number,
+) {
+  if (value < start + zone) {
+    return -Math.ceil((start + zone - value) / 4) * speed
   }
-  if (value > end - SCROLL_EDGE) {
-    return Math.ceil((value - (end - SCROLL_EDGE)) / 4)
+  if (value > end - zone) {
+    return Math.ceil((value - (end - zone)) / 4) * speed
   }
   return 0
 }

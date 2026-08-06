@@ -22,8 +22,13 @@ export const BOARD_COLORS = [
 export type BoardColor = typeof BoardColor.infer
 export const BoardColor = type.enumerated(...BOARD_COLORS)
 
-export type BoardIcon = typeof BoardIcon.infer
-export const BoardIcon = type.enumerated(...BoardIconCatalog)
+// Compile-time: the full icon catalog as a literal union (editor autocomplete).
+export type BoardIcon = (typeof BoardIconCatalog)[number]
+// Runtime: a cheap kebab-case shape check. Modelling the 1512-icon catalog as a
+// `type.enumerated(...)` union cost ~6s of arktype compile at every server boot
+// — each `.or("null")` / object embed recompiled the whole union. Icons are
+// cosmetic (rendered as a `ph-<icon>` class), so a shape check is sufficient.
+export const BoardIcon = type("/^[a-z0-9-]+$/").as<BoardIcon>()
 
 export type WorkspaceAccessLevel = typeof WorkspaceAccessLevel.infer
 export const WorkspaceAccessLevel = type.enumerated("read", "write", "manage")

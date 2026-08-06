@@ -2,12 +2,9 @@ import { BoardDrawer } from "@/Boards/Board/BoardDrawer"
 import classes from "@/Boards/Board/BoardView.module.css"
 import { ListView } from "@/Boards/List/ListView"
 import { PhasesView } from "@/Boards/Phases/PhasesView"
-import {
-  BoardsState,
-  useBoardsState,
-} from "@/Boards/State/BoardsState"
 import { TaskDrawer } from "@/Boards/Task/TaskDrawer"
 import { BoardIcon } from "@/common/BoardIcon"
+import { useBoardsView } from "@/state"
 import {
   ActionIcon,
   Button,
@@ -16,8 +13,13 @@ import {
   Tabs,
   Title,
 } from "@mantine/core"
-import { useCallback, useEffect, useState } from "react"
-import { PiGear, PiPlus } from "react-icons/pi"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react"
+import { Icon } from "@/common/Icon"
 import { useLocation } from "wouter"
 import { BoardsPath } from "shared/BoardsPath"
 import type { BoardAggregate, BoardTask } from "shared/models"
@@ -25,21 +27,25 @@ import type { BoardAggregate, BoardTask } from "shared/models"
 export function BoardView({ aggregate, taskID }: BoardView.Props) {
   const { board, workspace, tasks } = aggregate
   const [, navigate] = useLocation()
-  const [boardID] = useState(() => {
-    BoardsState.setBoard(board.id, initialSelection(tasks))
-    return board.id
-  })
-  const state = useBoardsState()
+  const boardID = board.id
+  const state = useBoardsView()
   const [settings, setSettings] = useState(false)
   const writable =
     workspace.access === "write" || workspace.access === "manage"
 
+  useLayoutEffect(() => {
+    state.setBoard(board.id, initialSelection(tasks))
+  }, [])
+
   useEffect(() => {
-    if (
-      state.selectedTask !== null &&
-      !tasks.some(({ id }) => id === state.selectedTask)
-    ) {
-      BoardsState.selectTask(tasks[0]?.id ?? null)
+    if (state.selectedTask !== null) {
+      if (!tasks.some(({ id }) => id === state.selectedTask)) {
+        if (!state.pendingTaskIds.includes(state.selectedTask)) {
+          state.selectTask(tasks[0]?.id ?? null)
+        }
+      } else if (state.pendingTaskIds.includes(state.selectedTask)) {
+        state.clearPendingTask(state.selectedTask)
+      }
     }
   }, [state.selectedTask, tasks])
 
@@ -57,7 +63,7 @@ export function BoardView({ aggregate, taskID }: BoardView.Props) {
 
   const openTask = useCallback(
     (id: number) => {
-      BoardsState.selectTask(id)
+      state.selectTask(id)
       navigate(BoardsPath.task(workspace.slug, board.slug, id), {
         state: { boardsTaskOrigin: true },
       })
@@ -99,8 +105,8 @@ export function BoardView({ aggregate, taskID }: BoardView.Props) {
         <Group>
           {writable && (
             <Button
-              leftSection={<PiPlus />}
-              onClick={() => BoardsState.openTaskComposer()}
+              leftSection={<Icon name="plus" />}
+              onClick={() => state.openTaskComposer()}
             >
               Add task
             </Button>
@@ -111,7 +117,7 @@ export function BoardView({ aggregate, taskID }: BoardView.Props) {
               size="lg"
               onClick={() => setSettings(true)}
             >
-              <PiGear />
+              <Icon name="gear" />
             </ActionIcon>
           )}
         </Group>
@@ -120,7 +126,7 @@ export function BoardView({ aggregate, taskID }: BoardView.Props) {
         className={classes.boardViews}
         value={state.mode}
         onChange={(value) =>
-          value && BoardsState.setMode(value as "list" | "phases")
+          value && state.setMode(value as "list" | "phases")
         }
         keepMounted={false}
         variant="outline"
@@ -136,7 +142,6 @@ export function BoardView({ aggregate, taskID }: BoardView.Props) {
           value="list"
           pt="md"
           className={classes.listPanel}
-          data-drag-scroll
         >
           <ListView aggregate={aggregate} onOpen={openTask} />
         </Tabs.Panel>
@@ -162,7 +167,7 @@ export function BoardView({ aggregate, taskID }: BoardView.Props) {
           taskID={taskID}
           onDeleted={(deleted) => {
             const index = tasks.findIndex(({ id }) => id === deleted)
-            BoardsState.selectTask(
+            state.selectTask(
               tasks[index + 1]?.id ?? tasks[index - 1]?.id ?? null,
             )
           }}

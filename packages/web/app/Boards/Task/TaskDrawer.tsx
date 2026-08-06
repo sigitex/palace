@@ -1,8 +1,7 @@
 import classes from "@/Boards/Task/TaskDrawer.module.css"
-import { BoardsQuery } from "@/Boards/BoardsQuery"
+import { useBoards } from "@/state"
 import { DeletePopover } from "@/Boards/Shared/DeletePopover"
 import { TaskStateSelector } from "@/Boards/Task/TaskStateSelector"
-import { call } from "@/common/call"
 import {
   Button,
   Divider,
@@ -14,7 +13,7 @@ import {
   Title,
 } from "@mantine/core"
 import { useEffect, useState } from "react"
-import { PiNotePencil, PiTrash } from "react-icons/pi"
+import { Icon } from "@/common/Icon"
 import ReactMarkdown from "react-markdown"
 import { useLocation } from "wouter"
 import { BoardsPath } from "shared/BoardsPath"
@@ -28,6 +27,7 @@ export function TaskDrawer({
 }: TaskDrawer.Props) {
   const { workspace, board, phases, tasks } = aggregate
   const task = tasks.find(({ id }) => id === taskID)
+  const boards = useBoards()
   const [, navigate] = useLocation()
   const writable =
     workspace.access === "write" || workspace.access === "manage"
@@ -38,14 +38,7 @@ export function TaskDrawer({
   )
   const [complete, setComplete] = useState(task?.complete ?? false)
   const [editingDetails, setEditingDetails] = useState(false)
-  const action = BoardsQuery.useAction(
-    (work: () => Promise<unknown>) => work(),
-    {
-      invalidateExact: [
-        BoardsQuery.keys.exact.aggregate(workspace.slug, board.slug),
-      ],
-    },
-  )
+  const [saving, setSaving] = useState(false)
   const dirty = task
     ? title !== task.title ||
       details !== task.details ||
@@ -77,18 +70,23 @@ export function TaskDrawer({
   }
 
   async function save(current: BoardTask) {
-    await action.mutateAsync(() =>
-      call.boards.task.update({
-        workspace: workspace.slug,
-        board: board.slug,
-        task: current.id,
-        title: title.trim(),
-        details,
-        complete,
-        phase,
-      }),
-    )
-    setEditingDetails(false)
+    setSaving(true)
+    try {
+      await boards.updateTask(
+        workspace.slug,
+        board.slug,
+        current.id,
+        {
+          title: title.trim(),
+          details,
+          complete,
+          phase,
+        },
+      )
+      setEditingDetails(false)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -149,7 +147,7 @@ export function TaskDrawer({
                 <Button
                   size="compact-sm"
                   variant="subtle"
-                  leftSection={<PiNotePencil />}
+                  leftSection={<Icon name="note-pencil" />}
                   onClick={() => setEditingDetails((value) => !value)}
                 >
                   {editingDetails ? "Preview" : "Edit details"}
@@ -194,7 +192,7 @@ export function TaskDrawer({
                 </Button>
                 <Button
                   variant="filled"
-                  loading={action.isPending}
+                  loading={saving}
                   disabled={!title.trim()}
                   onClick={() => save(task)}
                 >
@@ -208,12 +206,10 @@ export function TaskDrawer({
             <DeletePopover
               label={`task “${task.title}”`}
               onDelete={async () => {
-                await action.mutateAsync(() =>
-                  call.boards.task.delete({
-                    workspace: workspace.slug,
-                    board: board.slug,
-                    task: task.id,
-                  }),
+                await boards.deleteTask(
+                  workspace.slug,
+                  board.slug,
+                  task.id,
                 )
                 onDeleted(task.id)
                 close()
@@ -223,7 +219,7 @@ export function TaskDrawer({
                 className={classes.notebookDelete}
                 color="red"
                 variant="subtle"
-                leftSection={<PiTrash />}
+                leftSection={<Icon name="trash" />}
               >
                 Delete task
               </Button>

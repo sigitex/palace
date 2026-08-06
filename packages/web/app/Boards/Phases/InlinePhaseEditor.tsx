@@ -20,6 +20,7 @@ export function InlinePhaseEditor({
         label="Phase title"
         value={title}
         onChange={(event) => setTitle(event.currentTarget.value)}
+        onFocus={(event) => event.currentTarget.select()}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
             onCancel()

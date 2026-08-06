@@ -10,8 +10,8 @@ import {
   TextInput,
   UnstyledButton,
 } from "@mantine/core"
-import { memo } from "react"
-import { PiDotsSixVertical, PiTrash } from "react-icons/pi"
+import { memo, useState } from "react"
+import { Icon } from "@/common/Icon"
 import type { BoardAggregate, BoardTask } from "shared/models"
 
 export type TaskRowCommands = {
@@ -36,7 +36,6 @@ export type TaskRowProps = {
   selected: boolean
   editing: boolean
   dragHandle: usePointerDrag.Handle
-  position: string
   commands: TaskRowCommands
 }
 
@@ -48,10 +47,14 @@ export const TaskRow = memo(
     selected,
     editing,
     dragHandle,
-    position,
     commands,
   }: TaskRowProps) => {
     const phase = phases.find(({ id }) => id === task.phase)
+    const [optimisticComplete, setOptimisticComplete] = useState<
+      boolean | null
+    >(null)
+    const displayComplete = optimisticComplete ?? task.complete
+
     return (
       <div
         role="option"
@@ -75,24 +78,22 @@ export const TaskRow = memo(
         }}
         onDoubleClick={() => commands.open(task.id)}
       >
-        {writable && (
-          <ActionIcon
-            variant="subtle"
-            aria-label={`Drag ${task.title}; ${position}`}
-            className={classes.dragHandle}
-            {...dragHandle}
-          >
-            <PiDotsSixVertical />
-          </ActionIcon>
-        )}
         <Checkbox
+          size="lg"
           aria-label={`${task.complete ? "Reopen" : "Complete"} ${task.title}`}
-          checked={task.complete}
+          checked={displayComplete}
           disabled={!writable}
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
-          onChange={(event) =>
-            commands.setComplete(task.id, event.currentTarget.checked)
-          }
+          onChange={async (event) => {
+            const next = event.currentTarget.checked
+            setOptimisticComplete(next)
+            try {
+              await commands.setComplete(task.id, next)
+            } catch {
+              setOptimisticComplete(null)
+            }
+          }}
         />
         {editing ? (
           <TextInput
@@ -100,6 +101,7 @@ export const TaskRow = memo(
             aria-label="Task title"
             defaultValue={task.title}
             onFocus={(event) => event.currentTarget.select()}
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => {
               if (event.key === "Escape") {
@@ -124,6 +126,23 @@ export const TaskRow = memo(
               event.stopPropagation()
               commands.open(task.id)
             }}
+            onPointerDown={
+              writable
+                ? (event) => dragHandle.onPointerDown(event)
+                : undefined
+            }
+            onPointerMove={
+              writable ? dragHandle.onPointerMove : undefined
+            }
+            onPointerUp={
+              writable ? dragHandle.onPointerUp : undefined
+            }
+            onPointerCancel={
+              writable ? dragHandle.onPointerCancel : undefined
+            }
+            onLostPointerCapture={
+              writable ? dragHandle.onLostPointerCapture : undefined
+            }
           >
             <Text
               fw={600}
@@ -133,17 +152,33 @@ export const TaskRow = memo(
             </Text>
           </UnstyledButton>
         )}
-        <TaskStateSelector
-          phases={phases}
-          task={task}
-          writable={writable}
-          onChange={(state) => commands.setState(task.id, state)}
-        />
-        <Text size="xs" c="dimmed">
+        <div
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <TaskStateSelector
+            phases={phases}
+            task={task}
+            writable={writable}
+            onChange={(state) => commands.setState(task.id, state)}
+          />
+        </div>
+        <Text
+          size="xs"
+          c="dimmed"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           {task.creator.name}
         </Text>
         {writable && (
-          <>
+          <span
+            onPointerDown={(e) => e.stopPropagation()}
+            style={{
+              display: "inline-flex",
+              gap: "var(--mantine-spacing-xs)",
+              alignItems: "center",
+            }}
+          >
             <TaskMenu
               task={task}
               phases={phases}
@@ -155,7 +190,7 @@ export const TaskRow = memo(
               }
             />
             <DeletePopover
-              label={`task “${task.title}”`}
+              label={`task "${task.title}"`}
               onDelete={() => commands.delete(task.id)}
             >
               <ActionIcon
@@ -163,10 +198,10 @@ export const TaskRow = memo(
                 variant="subtle"
                 aria-label={`Delete ${task.title}`}
               >
-                <PiTrash />
+                <Icon name="trash" />
               </ActionIcon>
             </DeletePopover>
-          </>
+          </span>
         )}
       </div>
     )

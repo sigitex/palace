@@ -1,7 +1,6 @@
-import { BoardsQuery } from "@/Boards/BoardsQuery"
+import { useBoards } from "@/state"
 import { PresentationSelector } from "@/Boards/Presentation/PresentationSelector"
 import { DeletePopover } from "@/Boards/Shared/DeletePopover"
-import { call } from "@/common/call"
 import {
   Alert,
   Button,
@@ -39,29 +38,16 @@ export function WorkspaceDrawer({
   const [group, setGroup] = useState<string | null>(null)
   const [level, setLevel] = useState<WorkspaceAccessLevel>("read")
   const [deleteError, setDeleteError] = useState<string | null>(null)
-  const access = BoardsQuery.useAccess(workspace.slug, opened)
-  const groups = BoardsQuery.useGroups(workspace.slug, opened)
-  const workspaceAction = BoardsQuery.useAction(
-    (work: () => Promise<unknown>) => work(),
-    {
-      invalidateExact: [BoardsQuery.keys.exact.workspaces],
-      invalidatePrefix: [
-        BoardsQuery.keys.prefix.aggregates(workspace.slug),
-      ],
-    },
-  )
-  const accessAction = BoardsQuery.useAction(
-    (work: () => Promise<unknown>) => work(),
-    {
-      invalidateExact: [
-        BoardsQuery.keys.exact.workspaces,
-        BoardsQuery.keys.exact.access(workspace.slug),
-      ],
-      invalidatePrefix: [
-        BoardsQuery.keys.prefix.aggregates(workspace.slug),
-      ],
-    },
-  )
+  const [saving, setSaving] = useState(false)
+  const boards = useBoards()
+  const { access, groups } = boards
+
+  useEffect(() => {
+    if (opened) {
+      boards.loadAccess(workspace.slug)
+      boards.loadGroups(workspace.slug)
+    }
+  }, [opened, workspace.slug])
 
   useEffect(() => {
     setName(workspace.name)
@@ -108,19 +94,21 @@ export function WorkspaceDrawer({
               onIconChange={setIcon}
             />
             <Button
-              loading={workspaceAction.isPending}
+              loading={saving}
               onClick={async () => {
-                await workspaceAction.mutateAsync(() =>
-                  call.boards.workspace.update({
-                    workspace: workspace.slug,
+                setSaving(true)
+                try {
+                  await boards.updateWorkspace(workspace.slug, {
                     name,
                     slug,
                     color,
                     icon,
-                  }),
-                )
-                if (slug !== workspace.slug)
-                  navigate(BoardsPath.workspace(slug))
+                  })
+                  if (slug !== workspace.slug)
+                    navigate(BoardsPath.workspace(slug))
+                } finally {
+                  setSaving(false)
+                }
               }}
             >
               Save workspace
@@ -130,9 +118,7 @@ export function WorkspaceDrawer({
         )}
 
         <Title order={3}>Workspace access</Title>
-        {access.isLoading && (
-          <Text c="dimmed">Loading access...</Text>
-        )}
+        {access.loading && <Text c="dimmed">Loading access...</Text>}
         {access.data?.map((grant) => (
           <Group key={grant.group} align="end" wrap="nowrap">
             <Text style={{ flex: 1 }}>{grant.group_name}</Text>
@@ -141,27 +127,20 @@ export function WorkspaceDrawer({
               data={accessLevels}
               value={grant.level}
               allowDeselect={false}
-              onChange={(value) =>
-                value &&
-                accessAction.mutate(() =>
-                  call.boards.workspace.access.set({
-                    workspace: workspace.slug,
+              onChange={(value) => {
+                if (value) {
+                  boards.setAccess(workspace.slug, {
                     group: grant.group,
                     level: value as WorkspaceAccessLevel,
-                  }),
-                )
-              }
+                  })
+                }
+              }}
             />
             <Button
               color="red"
               size="xs"
               onClick={() =>
-                accessAction.mutate(() =>
-                  call.boards.workspace.access.remove({
-                    workspace: workspace.slug,
-                    group: grant.group,
-                  }),
-                )
+                boards.removeAccess(workspace.slug, grant.group)
               }
             >
               Remove
@@ -189,13 +168,10 @@ export function WorkspaceDrawer({
             disabled={!group}
             onClick={async () => {
               if (!group) return
-              await accessAction.mutateAsync(() =>
-                call.boards.workspace.access.set({
-                  workspace: workspace.slug,
-                  group: Number(group),
-                  level,
-                }),
-              )
+              await boards.setAccess(workspace.slug, {
+                group: Number(group),
+                level,
+              })
               setGroup(null)
             }}
           >
@@ -213,11 +189,7 @@ export function WorkspaceDrawer({
               onDelete={async () => {
                 setDeleteError(null)
                 try {
-                  await workspaceAction.mutateAsync(() =>
-                    call.boards.workspace.delete({
-                      workspace: workspace.slug,
-                    }),
-                  )
+                  await boards.deleteWorkspace(workspace.slug)
                   onClose()
                   navigate(BoardsPath.index)
                 } catch (error) {

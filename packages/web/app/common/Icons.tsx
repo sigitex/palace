@@ -1,23 +1,13 @@
-import {
-  PiCalendarDuotone,
-  PiCameraDuotone,
-  PiGearDuotone,
-  PiHouseDuotone,
-  PiKanbanDuotone,
-  PiPiggyBankDuotone,
-  PiRobotDuotone,
-  PiUserDuotone,
-  PiUsersFourDuotone,
-} from "react-icons/pi"
+import type { BoardIcon as IconName } from "shared/models"
 
 export const Icons = {
-  Calendar: PiCalendarDuotone,
-  Photos: PiCameraDuotone,
-  Admin: PiGearDuotone,
-  Home: PiHouseDuotone,
-  Boards: PiKanbanDuotone,
-  Budget: PiPiggyBankDuotone,
-  Bots: PiRobotDuotone,
-  Profile: PiUserDuotone,
-  Family: PiUsersFourDuotone,
-} as const
+  Calendar: "calendar",
+  Photos: "camera",
+  Admin: "gear",
+  Home: "house",
+  Boards: "kanban",
+  Budget: "piggy-bank",
+  Bots: "robot",
+  Profile: "user",
+  Family: "users-four",
+} as const satisfies Record<string, IconName>

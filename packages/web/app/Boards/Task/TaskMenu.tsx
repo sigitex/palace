@@ -1,6 +1,6 @@
 import { BoardIcon } from "@/common/BoardIcon"
 import { ActionIcon, Menu } from "@mantine/core"
-import { PiDotsThreeVertical } from "react-icons/pi"
+import { Icon } from "@/common/Icon"
 import type { BoardPhase, BoardTask } from "shared/models"
 
 export function TaskMenu({
@@ -16,7 +16,7 @@ export function TaskMenu({
           variant="subtle"
           aria-label={`Actions for ${task.title}`}
         >
-          <PiDotsThreeVertical />
+          <Icon name="dots-three-vertical" />
         </ActionIcon>
       </Menu.Target>
       <Menu.Dropdown>

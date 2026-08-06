@@ -8,12 +8,12 @@ export default function Nav() {
   return (
     <AppShell.Navbar p="md">
       <AppShell.Section grow component={ScrollArea}>
-        <NavigationLink to="/" label="Home" Icon={Icons.Home} />
+        <NavigationLink to="/" label="Home" icon={Icons.Home} />
         <Auth>
           <NavigationLink
             to={BoardsPath.index}
             label="Boards"
-            Icon={Icons.Boards}
+            icon={Icons.Boards}
             nested
           />
         </Auth>
@@ -21,45 +21,45 @@ export default function Nav() {
           <NavigationLink
             to="/calendar"
             label="Calendar"
-            Icon={Icons.Calendar}
+            icon={Icons.Calendar}
           />
         </Auth>
         <Auth allow="finch">
           <NavigationLink
             to="/family"
             label="Family"
-            Icon={Icons.Family}
+            icon={Icons.Family}
           />
         </Auth>
         <Auth allow="finch">
           <NavigationLink
             to="/budget"
             label="Budget"
-            Icon={Icons.Budget}
+            icon={Icons.Budget}
           />
         </Auth>
         <Auth allow="finch">
-          <NavigationLink to="/bots" label="Bots" Icon={Icons.Bots} />
+          <NavigationLink to="/bots" label="Bots" icon={Icons.Bots} />
         </Auth>
         <Auth allow="finch">
           <NavigationLink
             to="/photos"
             label="Photos"
-            Icon={Icons.Photos}
+            icon={Icons.Photos}
           />
         </Auth>
         <Auth allow="palace-admins">
           <NavigationLink
             to="/admin"
             label="Admin"
-            Icon={Icons.Admin}
+            icon={Icons.Admin}
           />
         </Auth>
         <Auth>
           <NavigationLink
             to="/me"
             label="Profile"
-            Icon={Icons.Profile}
+            icon={Icons.Profile}
           />
         </Auth>
       </AppShell.Section>

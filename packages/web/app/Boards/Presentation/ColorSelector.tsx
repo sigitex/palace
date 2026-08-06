@@ -5,7 +5,7 @@ import {
   Input,
   UnstyledButton,
 } from "@mantine/core"
-import { PiCheck, PiX } from "react-icons/pi"
+import { Icon } from "@/common/Icon"
 import { BOARD_COLORS, type BoardColor } from "shared/models"
 
 export function ColorSelector({
@@ -22,7 +22,7 @@ export function ColorSelector({
             aria-label="No color"
             onClick={() => onChange(null)}
           >
-            <PiX />
+            <Icon name="x" />
           </UnstyledButton>
         )}
         {BOARD_COLORS.map((value) => (
@@ -36,7 +36,9 @@ export function ColorSelector({
               color={`var(--mantine-color-${value}-6)`}
               size={28}
             >
-              {color === value && <PiCheck color="white" />}
+              {color === value && (
+                <Icon name="check" style={{ color: "white" }} />
+              )}
             </ColorSwatch>
           </UnstyledButton>
         ))}

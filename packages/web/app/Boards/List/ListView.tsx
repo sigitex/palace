@@ -1,49 +1,48 @@
+// oxlint-disable eslint/complexity
 import { usePointerDrag } from "@/Boards/Drag/usePointerDrag"
 import classes from "@/Boards/List/ListView.module.css"
 import { TaskRow, type TaskRowCommands } from "@/Boards/List/TaskRow"
-import { BoardsQuery } from "@/Boards/BoardsQuery"
-import {
-  BoardsState,
-  useBoardsState,
-} from "@/Boards/State/BoardsState"
+import { NewTaskEntry } from "@/Boards/Shared/NewTaskEntry"
+import scrollbarClasses from "@/Boards/Shared/Scrollbars.module.css"
+import { useBoards, useBoardsView } from "@/state"
 import { TaskComposer } from "@/Boards/Task/TaskComposer"
-import { TaskMovement } from "@/Boards/Task/TaskMovement"
+import {
+  TaskMovement,
+  type TaskMove,
+} from "@/Boards/Task/TaskMovement"
 import { BoardIcon } from "@/common/BoardIcon"
-import { call } from "@/common/call"
 import { useKeyboardShortcuts } from "@/common/useKeyboardShortcuts"
 import { Button, Group, Stack, Text, TextInput } from "@mantine/core"
 import { useMemo, useRef, useState } from "react"
-import {
-  PiCheckCircle,
-  PiCircleDashed,
-  PiMagnifyingGlass,
-} from "react-icons/pi"
+import { Icon } from "@/common/Icon"
 import type { BoardAggregate } from "shared/models"
 
 export function ListView({ aggregate, onOpen }: ListView.Props) {
   const { workspace, board, phases, tasks } = aggregate
-  const state = useBoardsState()
+  const state = useBoardsView()
+  const boards = useBoards()
   const writable =
     workspace.access === "write" || workspace.access === "manage"
   const [editing, setEditing] = useState<number | null>(null)
-  const aggregateKey = BoardsQuery.keys.exact.aggregate(
-    workspace.slug,
-    board.slug,
-  )
-  const action = BoardsQuery.useAction(
-    (work: () => Promise<unknown>) => work(),
-    { invalidateExact: [aggregateKey] },
-  )
-  const createTask = BoardsQuery.useAction(
-    (input: TaskComposer.Input) =>
-      call.boards.task.create({
-        workspace: workspace.slug,
-        board: board.slug,
-        ...input,
-      }),
-    { invalidateExact: [aggregateKey] },
-  )
-  const move = BoardsQuery.useMoveTask(workspace.slug, board.slug)
+  const ws = workspace.slug
+  const boardSlug = board.slug
+  const latest = useRef({ onOpen })
+  latest.current.onOpen = onOpen
+
+  function moveTask(
+    task: number,
+    destination: TaskMove["destination"],
+    anchors: { before?: number | null; after?: number | null } = {},
+  ) {
+    return boards.moveTask({
+      workspace: ws,
+      board: boardSlug,
+      task,
+      destination,
+      ...anchors,
+    })
+  }
+
   const normalizedSearch = state.listSearch.trim().toLowerCase()
   const visible = tasks.filter((task) => {
     const matchesSearch =
@@ -85,147 +84,81 @@ export function ListView({ aggregate, onOpen }: ListView.Props) {
     onDrop(source, target) {
       const index = visible.findIndex(({ id }) => id === target.task)
       if (index < 0) return
-      return move.mutateAsync({
-        workspace: workspace.slug,
-        board: board.slug,
-        task: source,
-        destination: { type: "board" },
-        ...TaskMovement.anchors(
+      return moveTask(
+        source,
+        { type: "board" },
+        TaskMovement.anchors(
           visible,
           source,
           index + (target.after ? 1 : 0),
         ),
-      })
+      )
     },
     sourceClassName: classes.dragSourceActive,
   })
+  // Keyed on the task id list, not the array identity: editing a task's fields
+  // (e.g. a checkbox) must not rebuild every handle and break TaskRow memo.
+  const taskIdKey = tasks.map(({ id }) => id).join(",")
   const dragHandles = useMemo(
     () => new Map(tasks.map(({ id }) => [id, drag.handle(id)])),
-    [drag.handle, tasks],
+    [drag.handle, taskIdKey],
   )
-  const commandContext = useRef({
-    workspace: workspace.slug,
-    board: board.slug,
-    tasks,
-    onOpen,
-    runAction: action.mutateAsync,
-    move: move.mutate,
-  })
-  commandContext.current = {
-    workspace: workspace.slug,
-    board: board.slug,
-    tasks,
-    onOpen,
-    runAction: action.mutateAsync,
-    move: move.mutate,
-  }
   const commandRef = useRef<TaskRowCommands | null>(null)
   const commands = (commandRef.current ??= {
-    select: BoardsState.selectTask,
-    open(taskID) {
-      commandContext.current.onOpen(taskID)
-    },
-    cancelEdit() {
-      setEditing(null)
-    },
+    select: (taskID) => state.selectTask(taskID),
+    open: (taskID) => latest.current.onOpen(taskID),
+    cancelEdit: () => setEditing(null),
     async saveTitle(taskID, title) {
-      const context = commandContext.current
-      await context.runAction(() =>
-        call.boards.task.update({
-          workspace: context.workspace,
-          board: context.board,
-          task: taskID,
-          title,
-        }),
-      )
+      await boards.updateTask(ws, boardSlug, taskID, { title })
       setEditing(null)
     },
-    setState(taskID, taskState) {
-      const context = commandContext.current
-      return context.runAction(() =>
-        call.boards.task.update({
-          workspace: context.workspace,
-          board: context.board,
-          task: taskID,
-          ...taskState,
-        }),
-      )
-    },
-    setComplete(taskID, complete) {
-      const context = commandContext.current
-      return context.runAction(() =>
-        call.boards.task.update({
-          workspace: context.workspace,
-          board: context.board,
-          task: taskID,
-          complete,
-        }),
-      )
-    },
-    move(taskID, destination) {
-      const context = commandContext.current
-      context.move({
-        workspace: context.workspace,
-        board: context.board,
-        task: taskID,
-        destination,
-      })
-    },
-    step(taskID, direction) {
-      const context = commandContext.current
-      const index = context.tasks.findIndex(({ id }) => id === taskID)
-      if (
-        index < 0 ||
-        index + direction < 0 ||
-        index + direction >= context.tasks.length
-      ) {
-        return
-      }
-      context.move({
-        workspace: context.workspace,
-        board: context.board,
-        task: taskID,
-        destination: { type: "board" },
-        ...TaskMovement.anchors(
-          context.tasks,
-          taskID,
-          index + direction,
-        ),
-      })
-    },
-    delete(taskID) {
-      const context = commandContext.current
-      return context.runAction(() =>
-        call.boards.task.delete({
-          workspace: context.workspace,
-          board: context.board,
-          task: taskID,
-        }),
-      )
-    },
+    setState: (taskID, taskState) =>
+      boards.updateTask(ws, boardSlug, taskID, taskState),
+    setComplete: (taskID, complete) =>
+      boards.updateTask(ws, boardSlug, taskID, { complete }),
+    move: (taskID, destination) => moveTask(taskID, destination),
+    step: (taskID, direction) =>
+      boards.stepTask(ws, boardSlug, taskID, direction),
+    delete: (taskID) => boards.deleteTask(ws, boardSlug, taskID),
   })
+
+  const LIST_ENTRY = "list"
 
   useKeyboardShortcuts([
     {
       key: "n",
       enabled: writable && !state.taskComposerVisible,
-      action: () => BoardsState.openTaskComposer(),
+      action: () => state.openTaskComposer(),
     },
     {
       key: "ArrowUp",
-      enabled: state.selectedTask !== null && editing === null,
+      enabled:
+        (state.selectedTask !== null ||
+          state.selectedNewTask === LIST_ENTRY) &&
+        editing === null,
       action: () => selectStep(-1),
     },
     {
       key: "ArrowDown",
-      enabled: state.selectedTask !== null && editing === null,
+      enabled:
+        (state.selectedTask !== null ||
+          state.selectedNewTask === LIST_ENTRY) &&
+        editing === null,
       action: () => selectStep(1),
     },
     {
       key: "Enter",
-      enabled: state.selectedTask !== null && editing === null,
-      action: () =>
-        state.selectedTask !== null && onOpen(state.selectedTask),
+      enabled:
+        (state.selectedTask !== null ||
+          state.selectedNewTask === LIST_ENTRY) &&
+        editing === null,
+      action: () => {
+        if (state.selectedTask !== null) {
+          onOpen(state.selectedTask)
+        } else if (state.selectedNewTask === LIST_ENTRY) {
+          state.openTaskComposer()
+        }
+      },
     },
     {
       key: "F2",
@@ -265,27 +198,48 @@ export function ListView({ aggregate, onOpen }: ListView.Props) {
   ])
 
   function selectStep(direction: -1 | 1) {
+    if (state.selectedNewTask === LIST_ENTRY) {
+      if (direction === -1) {
+        const task = visible[visible.length - 1]
+        if (task) {
+          state.selectTask(task.id)
+          document
+            .querySelector<HTMLElement>(`[data-task-id="${task.id}"]`)
+            ?.focus()
+        }
+      }
+      return
+    }
     const index = visible.findIndex(
       ({ id }) => id === state.selectedTask,
     )
     const task = visible[index + direction]
     if (task) {
-      BoardsState.selectTask(task.id)
+      state.selectTask(task.id)
       document
         .querySelector<HTMLElement>(`[data-task-id="${task.id}"]`)
+        ?.focus()
+    } else if (direction === 1 && writable && index >= 0) {
+      state.selectNewTask(LIST_ENTRY)
+      document
+        .querySelector<HTMLElement>("[data-new-task-entry]")
         ?.focus()
     }
   }
 
   return (
-    <Stack gap="md">
-      <Group align="flex-end" justify="space-between">
+    <Stack gap="md" className={classes.listView}>
+      <Group
+        align="flex-end"
+        justify="space-between"
+        className={classes.listHeader}
+      >
         <TextInput
           label="Search tasks"
-          leftSection={<PiMagnifyingGlass aria-hidden />}
+          leftSection={<Icon name="magnifying-glass" aria-hidden />}
           value={state.listSearch}
           onChange={(event) =>
-            BoardsState.setListSearch(event.currentTarget.value)
+            state.setListSearch(event.currentTarget.value)
           }
           className={classes.listSearch}
         />
@@ -293,15 +247,13 @@ export function ListView({ aggregate, onOpen }: ListView.Props) {
           <FilterButton
             active={state.listProjection === "all"}
             label="All"
-            onClick={() => BoardsState.setListProjection("all")}
+            onClick={() => state.setListProjection("all")}
           />
           <FilterButton
             active={state.listProjection === "incomplete"}
             label="Incomplete"
-            icon={<PiCircleDashed />}
-            onClick={() =>
-              BoardsState.setListProjection("incomplete")
-            }
+            icon={<Icon name="circle-dashed" />}
+            onClick={() => state.setListProjection("incomplete")}
           />
           {phases.map((phase) => (
             <FilterButton
@@ -315,20 +267,25 @@ export function ListView({ aggregate, onOpen }: ListView.Props) {
               }
               color={phase.color}
               onClick={() =>
-                BoardsState.setListProjection(`phase:${phase.id}`)
+                state.setListProjection(`phase:${phase.id}`)
               }
             />
           ))}
           <FilterButton
             active={state.listProjection === "complete"}
             label="Complete"
-            icon={<PiCheckCircle />}
-            onClick={() => BoardsState.setListProjection("complete")}
+            icon={<Icon name="check-circle" />}
+            onClick={() => state.setListProjection("complete")}
           />
         </Button.Group>
       </Group>
-      <Stack gap={0} className={classes.taskList} role="listbox">
-        {visible.map((task, index) => (
+      <Stack
+        gap={0}
+        className={`${classes.taskList} ${scrollbarClasses.scrollbar}`}
+        role="listbox"
+        data-drag-scroll
+      >
+        {visible.map((task) => (
           <TaskRow
             key={task.id}
             task={task}
@@ -337,30 +294,41 @@ export function ListView({ aggregate, onOpen }: ListView.Props) {
             selected={task.id === state.selectedTask}
             editing={task.id === editing}
             dragHandle={dragHandles.get(task.id)!}
-            position={TaskMovement.describePosition(
-              index,
-              visible.length,
-            )}
             commands={commands}
           />
         ))}
-        {visible.length === 0 && !state.taskComposerVisible && (
-          <Text c="dimmed" ta="center" p="xl">
-            No tasks match this view.
-          </Text>
-        )}
-        {state.taskComposerVisible && (
-          <TaskComposer
-            phases={phases}
-            defaultPhase={state.taskComposerPhase}
-            creating={createTask.isPending}
-            onCreate={createTask.mutateAsync}
-            onCreated={(task) => {
-              BoardsState.closeTaskComposer()
-              BoardsState.selectTask(task.id)
-            }}
-            onCancel={BoardsState.closeTaskComposer}
-          />
+        {visible.length === 0 &&
+          !state.taskComposerVisible &&
+          !writable && (
+            <Text c="dimmed" ta="center" p="xl">
+              No tasks match this view.
+            </Text>
+          )}
+        {(state.taskComposerVisible || writable) && (
+          <div className={classes.stickyFooter}>
+            {state.taskComposerVisible ? (
+              <TaskComposer
+                phases={phases}
+                defaultPhase={state.taskComposerPhase}
+                showPhase={false}
+                creating={boards.creatingTask}
+                onCreate={(input) =>
+                  boards.createTask(ws, boardSlug, input)
+                }
+                onCreated={(task) => {
+                  state.closeTaskComposer()
+                  state.addPendingTask(task.id)
+                  state.selectTask(task.id)
+                }}
+                onCancel={() => state.closeTaskComposer()}
+              />
+            ) : (
+              <NewTaskEntry
+                selected={state.selectedNewTask === LIST_ENTRY}
+                onActivate={() => state.openTaskComposer()}
+              />
+            )}
+          </div>
         )}
       </Stack>
     </Stack>

@@ -1,30 +1,56 @@
+// oxlint-disable eslint/complexity
 import { BoardView } from "@/Boards/Board/BoardView"
-import { BoardsQuery } from "@/Boards/BoardsQuery"
 import classes from "@/Boards/Boards.module.css"
 import { BoardsIndex } from "@/Boards/Index/BoardsIndex"
+import { useBoards } from "@/state"
 import { Alert, Loader, Stack } from "@mantine/core"
+import { useEffect } from "react"
 
 export default function Boards({
   workspace,
   board,
   task,
 }: Boards.Props) {
-  const workspaces = BoardsQuery.useWorkspaces()
-  const boards = BoardsQuery.useBoards(workspace)
-  const aggregate = BoardsQuery.useBoard(workspace, board)
+  const boards = useBoards()
+  const { workspaces, boards: boardList, aggregate } = boards
 
+  useEffect(() => {
+    boards.loadWorkspaces()
+  }, [])
+
+  useEffect(() => {
+    if (workspace) {
+      boards.loadBoards(workspace)
+    }
+  }, [workspace])
+
+  useEffect(() => {
+    if (workspace && board) {
+      boards.loadAggregate(workspace, board)
+    } else {
+      boards.clearAggregate()
+    }
+  }, [workspace, board])
+
+  const boardData =
+    aggregate.data?.board.slug === board &&
+    aggregate.data?.workspace.slug === workspace
+      ? aggregate.data
+      : null
+
+  const error = workspaces.error ?? boardList.error ?? aggregate.error
   if (
-    workspaces.isLoading ||
-    (workspace && boards.isLoading) ||
-    (board && aggregate.isLoading)
+    !error &&
+    (workspaces.loading ||
+      (workspace && boardList.loading) ||
+      (board && !boardData))
   ) {
     return <Loader aria-label="Loading Boards" />
   }
-  const error = workspaces.error ?? boards.error ?? aggregate.error
   if (error) {
     return (
       <Alert color="red" title="Boards unavailable">
-        {error.message}
+        {error}
       </Alert>
     )
   }
@@ -38,13 +64,6 @@ export default function Boards({
       </Alert>
     )
   }
-  if (board && !aggregate.data) {
-    return (
-      <Alert color="yellow" title="Board not found">
-        Board is missing or inaccessible.
-      </Alert>
-    )
-  }
   if (task !== undefined && (!Number.isInteger(task) || task < 0)) {
     return (
       <Alert color="yellow" title="Task not found">
@@ -55,16 +74,16 @@ export default function Boards({
 
   return (
     <Stack className={classes.page}>
-      {aggregate.data ? (
+      {boardData ? (
         <BoardView
-          key={aggregate.data.board.id}
-          aggregate={aggregate.data}
+          key={boardData.board.id}
+          aggregate={boardData}
           taskID={task}
         />
       ) : (
         <BoardsIndex
           workspaces={workspaces.data ?? []}
-          boards={boards.data ?? []}
+          boardList={boardList.data ?? []}
           selectedWorkspace={workspace}
         />
       )}

@@ -1,20 +1,13 @@
 import type { CSSProperties, HTMLAttributes } from "react"
 import type { BoardIcon as BoardIconKey } from "shared/models"
+import { Icon } from "@/common/Icon"
 
 export function BoardIcon({
   icon,
   size = "1.25rem",
-  className,
-  style,
   ...props
 }: BoardIcon.Props) {
-  return (
-    <i
-      className={`ph-duotone ph-${icon}${className ? ` ${className}` : ""}`}
-      style={{ ...style, fontSize: size }}
-      {...props}
-    />
-  )
+  return <Icon name={icon} size={size} {...props} />
 }
 
 export namespace BoardIcon {

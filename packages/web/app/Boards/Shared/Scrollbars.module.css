@@ -1,0 +1,24 @@
+.scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mantine-color-gray-4) var(--mantine-color-gray-1);
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  background: var(--mantine-color-gray-1);
+  border-radius: 0;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background: var(--mantine-color-gray-4);
+  border-radius: 0;
+  border: 0;
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--mantine-color-gray-5);
+}

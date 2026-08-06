@@ -1,6 +1,14 @@
 import { PresentationSelector } from "@/Boards/Presentation/PresentationSelector"
-import { Button, Group, Paper, Stack, TextInput } from "@mantine/core"
+import classes from "@/Boards/Phases/PhaseComposer.module.css"
+import {
+  ActionIcon,
+  Group,
+  Paper,
+  Stack,
+  TextInput,
+} from "@mantine/core"
 import { useState } from "react"
+import { Icon } from "@/common/Icon"
 import type { BoardColor, BoardIcon, BoardPhase } from "shared/models"
 
 export function PhaseComposer({
@@ -32,18 +40,37 @@ export function PhaseComposer({
       }}
     >
       <Stack gap="sm">
-        <TextInput
-          autoFocus
-          label="Phase title"
-          placeholder="Phase name"
-          value={title}
-          onChange={(event) => setTitle(event.currentTarget.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              onCancel()
-            }
-          }}
-        />
+        <Group className={classes.composerRow} wrap="nowrap">
+          <TextInput
+            autoFocus
+            placeholder="Phase name"
+            value={title}
+            onChange={(event) => setTitle(event.currentTarget.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                onCancel()
+              }
+            }}
+            className={classes.titleInput}
+          />
+          <ActionIcon
+            variant="subtle"
+            color="gray"
+            onClick={onCancel}
+            aria-label="Cancel"
+          >
+            <Icon name="x" />
+          </ActionIcon>
+          <ActionIcon
+            variant="filled"
+            type="submit"
+            loading={creating}
+            disabled={!title.trim() || !color}
+            aria-label="Add phase"
+          >
+            <Icon name="check" />
+          </ActionIcon>
+        </Group>
         <PresentationSelector
           color={color}
           icon={icon}
@@ -51,19 +78,6 @@ export function PhaseComposer({
           onColorChange={setColor}
           onIconChange={setIcon}
         />
-        <Group justify="flex-end">
-          <Button type="button" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="filled"
-            loading={creating}
-            disabled={!title.trim() || !color}
-          >
-            Add phase
-          </Button>
-        </Group>
       </Stack>
     </Paper>
   )

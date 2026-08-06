@@ -1,7 +1,6 @@
-import { BoardsQuery } from "@/Boards/BoardsQuery"
+import { useBoards } from "@/state"
 import { PresentationSelector } from "@/Boards/Presentation/PresentationSelector"
 import { DeletePopover } from "@/Boards/Shared/DeletePopover"
-import { call } from "@/common/call"
 import {
   Button,
   Divider,
@@ -25,20 +24,12 @@ export function BoardDrawer({
   onClose,
 }: BoardDrawer.Props) {
   const { board, workspace } = aggregate
+  const boards = useBoards()
   const [, navigate] = useLocation()
   const [name, setName] = useState(board.name)
   const [slug, setSlug] = useState(board.slug)
   const [color, setColor] = useState<BoardColor | null>(board.color)
   const [icon, setIcon] = useState<BoardIcon | null>(board.icon)
-  const action = BoardsQuery.useAction(
-    (work: () => Promise<unknown>) => work(),
-    {
-      invalidateExact: [
-        BoardsQuery.keys.exact.boards(workspace.slug),
-        BoardsQuery.keys.exact.aggregate(workspace.slug, board.slug),
-      ],
-    },
-  )
 
   useEffect(() => {
     setName(board.name)
@@ -75,16 +66,12 @@ export function BoardDrawer({
         />
         <Button
           onClick={async () => {
-            await action.mutateAsync(() =>
-              call.boards.board.update({
-                workspace: workspace.slug,
-                board: board.slug,
-                name,
-                slug,
-                color,
-                icon,
-              }),
-            )
+            await boards.updateBoard(workspace.slug, board.slug, {
+              name,
+              slug,
+              color,
+              icon,
+            })
             if (slug !== board.slug)
               navigate(BoardsPath.board(workspace.slug, slug))
           }}
@@ -96,12 +83,7 @@ export function BoardDrawer({
         <DeletePopover
           label={`board “${board.name}”`}
           onDelete={async () => {
-            await action.mutateAsync(() =>
-              call.boards.board.delete({
-                workspace: workspace.slug,
-                board: board.slug,
-              }),
-            )
+            await boards.deleteBoard(workspace.slug, board.slug)
             onClose()
             navigate(BoardsPath.workspace(workspace.slug))
           }}

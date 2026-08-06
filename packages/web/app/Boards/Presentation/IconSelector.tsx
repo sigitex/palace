@@ -12,7 +12,7 @@ import {
   TextInput,
 } from "@mantine/core"
 import { useEffect, useState } from "react"
-import { PiMagnifyingGlass, PiPlus, PiX } from "react-icons/pi"
+import { Icon } from "@/common/Icon"
 import { BoardIconCatalog } from "shared/models/BoardIconCatalog"
 import type { BoardIcon as BoardIconKey } from "shared/models"
 
@@ -60,7 +60,7 @@ export function IconSelector({
               {icon ? (
                 <BoardIcon icon={icon} size="1.5rem" />
               ) : (
-                <PiPlus />
+                <Icon name="plus" />
               )}
             </ActionIcon>
           </Popover.Target>
@@ -70,7 +70,7 @@ export function IconSelector({
                 autoFocus
                 aria-label="Search icons"
                 placeholder="Search icons"
-                leftSection={<PiMagnifyingGlass />}
+                leftSection={<Icon name="magnifying-glass" />}
                 value={search}
                 onChange={(event) =>
                   setSearch(event.currentTarget.value)
@@ -118,7 +118,7 @@ export function IconSelector({
             aria-label="Remove icon"
             onClick={() => onChange(null)}
           >
-            <PiX />
+            <Icon name="x" />
           </ActionIcon>
         )}
       </Group>

@@ -1,6 +1,13 @@
 import { PhaseSelector } from "@/Boards/Task/PhaseSelector"
-import { Button, Group, Input, Paper, TextInput } from "@mantine/core"
+import {
+  ActionIcon,
+  Group,
+  Input,
+  Paper,
+  TextInput,
+} from "@mantine/core"
 import { useState } from "react"
+import { Icon } from "@/common/Icon"
 import type { BoardPhase, BoardTask } from "shared/models"
 
 export function TaskComposer({
@@ -32,11 +39,10 @@ export function TaskComposer({
         onCreated(task)
       }}
     >
-      <Group align="end" wrap="wrap">
+      <Group gap="xs" align="center" wrap="nowrap">
         <TextInput
           autoFocus
-          label="Task title"
-          placeholder="What needs doing?"
+          placeholder="Task title"
           value={title}
           onChange={(event) => setTitle(event.currentTarget.value)}
           onKeyDown={(event) => {
@@ -44,7 +50,7 @@ export function TaskComposer({
               onCancel()
             }
           }}
-          style={{ flex: "1 1 14rem" }}
+          style={{ flex: 1 }}
         />
         {showPhase && (
           <Input.Wrapper label="Phase">
@@ -56,19 +62,23 @@ export function TaskComposer({
             />
           </Input.Wrapper>
         )}
-        <Group gap="xs">
-          <Button type="button" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="filled"
-            loading={creating}
-            disabled={!title.trim()}
-          >
-            Add task
-          </Button>
-        </Group>
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          onClick={onCancel}
+          aria-label="Cancel"
+        >
+          <Icon name="x" />
+        </ActionIcon>
+        <ActionIcon
+          variant="filled"
+          type="submit"
+          loading={creating}
+          disabled={!title.trim()}
+          aria-label="Add task"
+        >
+          <Icon name="check" />
+        </ActionIcon>
       </Group>
     </Paper>
   )

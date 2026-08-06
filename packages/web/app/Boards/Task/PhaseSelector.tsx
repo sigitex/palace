@@ -1,7 +1,7 @@
 import classes from "@/Boards/Task/TaskSelectors.module.css"
 import { BoardIcon } from "@/common/BoardIcon"
 import { Group, Menu, Text, UnstyledButton } from "@mantine/core"
-import { PiCircleDashed } from "react-icons/pi"
+import { Icon } from "@/common/Icon"
 import type { BoardPhase } from "shared/models"
 
 export function PhaseSelector({
@@ -29,7 +29,7 @@ export function PhaseSelector({
         {selected?.icon ? (
           <BoardIcon icon={selected.icon} aria-hidden />
         ) : !selected ? (
-          <PiCircleDashed aria-hidden />
+          <Icon name="circle-dashed" aria-hidden />
         ) : null}
         <Text size="sm" fw={600} truncate>
           {selected?.title ?? "Incomplete"}
@@ -46,7 +46,7 @@ export function PhaseSelector({
       <Menu.Target>{control}</Menu.Target>
       <Menu.Dropdown>
         <Menu.Item
-          leftSection={<PiCircleDashed />}
+          leftSection={<Icon name="circle-dashed" />}
           onClick={() => onChange(null)}
         >
           Incomplete

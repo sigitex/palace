@@ -7,19 +7,15 @@ import {
   type PhaseLaneCommands,
 } from "@/Boards/Phases/PhaseLane"
 import classes from "@/Boards/Phases/PhasesView.module.css"
-import { BoardsQuery } from "@/Boards/BoardsQuery"
-import {
-  BoardsState,
-  useBoardsState,
-} from "@/Boards/State/BoardsState"
+import scrollbarClasses from "@/Boards/Shared/Scrollbars.module.css"
+import { useBoards, useBoardsView } from "@/state"
 import type { TaskComposer } from "@/Boards/Task/TaskComposer"
 import type { TaskMenu } from "@/Boards/Task/TaskMenu"
 import { TaskMovement } from "@/Boards/Task/TaskMovement"
-import { call } from "@/common/call"
 import { useKeyboardShortcuts } from "@/common/useKeyboardShortcuts"
 import { Button, Stack } from "@mantine/core"
-import { useMemo, useRef } from "react"
-import { PiEye, PiEyeSlash, PiPlus } from "react-icons/pi"
+import { useMemo, useRef, useState } from "react"
+import { Icon } from "@/common/Icon"
 import type { BoardAggregate, BoardTask } from "shared/models"
 
 type DragSource =
@@ -37,40 +33,22 @@ type DragTarget =
 
 export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
   const { workspace, board, phases, tasks } = aggregate
-  const state = useBoardsState()
+  const state = useBoardsView()
+  const boards = useBoards()
   const writable =
     workspace.access === "write" || workspace.access === "manage"
-  const aggregateKey = BoardsQuery.keys.exact.aggregate(
-    workspace.slug,
-    board.slug,
-  )
-  const action = BoardsQuery.useAction(
-    (work: () => Promise<unknown>) => work(),
-    { invalidateExact: [aggregateKey] },
-  )
-  const createTask = BoardsQuery.useAction(
-    (input: TaskComposer.Input) =>
-      call.boards.task.create({
-        workspace: workspace.slug,
-        board: board.slug,
-        ...input,
-      }),
-    { invalidateExact: [aggregateKey] },
-  )
-  const createPhase = BoardsQuery.useAction(
-    (input: PhaseComposer.Input) =>
-      call.boards.phase.create({
-        workspace: workspace.slug,
-        board: board.slug,
-        ...input,
-      }),
-    { invalidateExact: [aggregateKey] },
-  )
-  const taskMove = BoardsQuery.useMoveTask(workspace.slug, board.slug)
+  const ws = workspace.slug
+  const boardSlug = board.slug
+  const latest = useRef({ onOpen, lanes: [] as Lane[] })
+  latest.current.onOpen = onOpen
+  const [editingTask, setEditingTask] = useState<number | null>(null)
   const lanes = useMemo(
     () => makeLanes(phases, tasks),
     [phases, tasks],
   )
+  // Stable commands (built once) can't read fresh render state or the live
+  // store through a captured useProxy wrapper — hand them the current lanes.
+  latest.current.lanes = lanes
   const drag = usePointerDrag<DragSource, DragTarget>({
     resolveTarget(element, source, point) {
       if (source.kind === "phase") {
@@ -133,7 +111,13 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
     },
     onDrop(source, target) {
       if (source.kind === "phase" && target.kind === "phase") {
-        return movePhaseTo(source.id, target.phase, target.after)
+        return boards.movePhaseTo(
+          ws,
+          boardSlug,
+          source.id,
+          target.phase,
+          target.after,
+        )
       }
       if (source.kind !== "task" || target.kind !== "task") return
       const lane = lanes.find(({ key }) => key === target.lane)
@@ -154,7 +138,12 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
       )
     },
     sourceClassName: classes.dragSourceActive,
+    autoScroll: { axis: "x", zoneSize: 100 },
   })
+  // Keyed on id lists, not array identity, so task/phase field edits don't
+  // rebuild every handle and break TaskCard/PhaseLane memoization.
+  const taskIdKey = tasks.map(({ id }) => id).join(",")
+  const phaseIdKey = phases.map(({ id }) => id).join(",")
   const taskDragHandles = useMemo(
     () =>
       new Map(
@@ -163,7 +152,7 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
           drag.handle({ kind: "task", id }),
         ]),
       ),
-    [drag.handle, tasks],
+    [drag.handle, taskIdKey],
   )
   const phaseDragHandles = useMemo(
     () =>
@@ -173,89 +162,44 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
           drag.handle({ kind: "phase", id }),
         ]),
       ),
-    [drag.handle, phases],
+    [drag.handle, phaseIdKey],
   )
-  const commandContext = useRef({
-    workspace: workspace.slug,
-    board: board.slug,
-    lanes,
-    onOpen,
-    runAction: action.mutateAsync,
-    createTask: createTask.mutateAsync,
-    moveTask,
-    movePhaseStep,
-  })
-  commandContext.current = {
-    workspace: workspace.slug,
-    board: board.slug,
-    lanes,
-    onOpen,
-    runAction: action.mutateAsync,
-    createTask: createTask.mutateAsync,
-    moveTask,
-    movePhaseStep,
-  }
   const commandRef = useRef<PhaseLaneCommands | null>(null)
   const commands = (commandRef.current ??= {
-    select: BoardsState.selectTask,
-    open(taskID) {
-      commandContext.current.onOpen(taskID)
-    },
-    move(taskID, destination) {
-      commandContext.current.moveTask(taskID, destination)
-    },
+    select: (taskID) => state.selectTask(taskID),
+    open: (taskID) => latest.current.onOpen(taskID),
+    move: (taskID, destination) => moveTask(taskID, destination),
     step(taskID, laneKey, direction) {
-      const context = commandContext.current
-      const lane = context.lanes.find(({ key }) => key === laneKey)
+      const lane = latest.current.lanes.find(
+        ({ key }) => key === laneKey,
+      )
       if (!lane) return
       const index = lane.tasks.findIndex(({ id }) => id === taskID)
-      context.moveTask(
+      moveTask(
         taskID,
         laneDestination(lane),
         TaskMovement.anchors(lane.tasks, taskID, index + direction),
       )
     },
-    delete(taskID) {
-      const context = commandContext.current
-      return context.runAction(() =>
-        call.boards.task.delete({
-          workspace: context.workspace,
-          board: context.board,
-          task: taskID,
-        }),
-      )
+    delete: (taskID) => boards.deleteTask(ws, boardSlug, taskID),
+    async saveTitle(taskID, title) {
+      await boards.updateTask(ws, boardSlug, taskID, { title })
+      setEditingTask(null)
     },
-    editPhase: BoardsState.setActivePhaseEditor,
-    movePhase(phaseID, direction) {
-      commandContext.current.movePhaseStep(phaseID, direction)
-    },
-    openTaskComposer: BoardsState.openTaskComposer,
-    closeTaskComposer: BoardsState.closeTaskComposer,
-    createTask(input) {
-      return commandContext.current.createTask(input)
-    },
+    cancelEdit: () => setEditingTask(null),
+    editPhase: (phaseID) => state.setActivePhaseEditor(phaseID),
+    movePhase: (phaseID, direction) =>
+      boards.movePhaseStep(ws, boardSlug, phaseID, direction),
+    openTaskComposer: (phase) => state.openTaskComposer(phase),
+    closeTaskComposer: () => state.closeTaskComposer(),
+    createTask,
     async savePhase(phaseID, metadata) {
-      const context = commandContext.current
-      await context.runAction(() =>
-        call.boards.phase.update({
-          workspace: context.workspace,
-          board: context.board,
-          phase: phaseID,
-          ...metadata,
-        }),
-      )
-      BoardsState.setActivePhaseEditor(null)
+      await boards.updatePhase(ws, boardSlug, phaseID, metadata)
+      state.setActivePhaseEditor(null)
     },
     async deletePhase(phaseID) {
-      const context = commandContext.current
-      await context.runAction(() =>
-        call.boards.phase.delete({
-          workspace: context.workspace,
-          board: context.board,
-          phase: phaseID,
-        }),
-      )
-      BoardsState.setActivePhaseEditor(null)
+      await boards.deletePhase(ws, boardSlug, phaseID)
+      state.setActivePhaseEditor(null)
     },
   })
 
@@ -263,40 +207,63 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
     {
       key: "n",
       enabled: writable && !state.taskComposerVisible,
-      action: () => BoardsState.openTaskComposer(),
+      action: () => state.openTaskComposer(),
     },
     {
       key: "ArrowUp",
-      enabled: state.selectedTask !== null,
+      enabled:
+        state.selectedTask !== null || state.selectedNewTask !== null,
       action: () => selectVertical(-1),
     },
     {
       key: "ArrowDown",
-      enabled: state.selectedTask !== null,
+      enabled:
+        state.selectedTask !== null || state.selectedNewTask !== null,
       action: () => selectVertical(1),
     },
     {
       key: "ArrowLeft",
-      enabled: state.selectedTask !== null,
+      enabled:
+        state.selectedTask !== null || state.selectedNewTask !== null,
       action: () => selectHorizontal(-1),
     },
     {
       key: "ArrowRight",
-      enabled: state.selectedTask !== null,
+      enabled:
+        state.selectedTask !== null || state.selectedNewTask !== null,
       action: () => selectHorizontal(1),
     },
     {
       key: "Enter",
-      enabled: state.selectedTask !== null,
-      action: () =>
-        state.selectedTask !== null && onOpen(state.selectedTask),
+      enabled:
+        state.selectedTask !== null || state.selectedNewTask !== null,
+      action: () => {
+        if (state.selectedTask !== null) {
+          onOpen(state.selectedTask)
+        } else if (state.selectedNewTask !== null) {
+          const lane = visibleLanes().find(
+            ({ key }) => key === state.selectedNewTask,
+          )
+          if (lane) {
+            state.openTaskComposer(lane.phase?.id ?? null)
+          }
+        }
+      },
     },
     {
       key: "x",
       enabled: writable && state.selectedTask !== null,
       action: () =>
         state.selectedTask !== null &&
-        completeTask(state.selectedTask),
+        boards.completeTask(ws, boardSlug, state.selectedTask),
+    },
+    {
+      key: "F2",
+      enabled:
+        writable &&
+        state.selectedTask !== null &&
+        editingTask === null,
+      action: () => setEditingTask(state.selectedTask),
     },
     {
       key: "Delete",
@@ -352,6 +319,17 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
 
   function selectedPosition() {
     const visible = visibleLanes()
+    const entryLane = state.selectedNewTask
+      ? visible.findIndex(({ key }) => key === state.selectedNewTask)
+      : -1
+    if (entryLane >= 0) {
+      return {
+        lanes: visible,
+        lane: entryLane,
+        entry: true as const,
+        task: -1,
+      }
+    }
     const lane = visible.findIndex(({ tasks: laneTasks }) =>
       laneTasks.some(({ id }) => id === state.selectedTask),
     )
@@ -362,28 +340,65 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
         visible[lane]?.tasks.findIndex(
           ({ id }) => id === state.selectedTask,
         ) ?? -1,
+      entry: false as const,
     }
   }
 
   function selectVertical(direction: -1 | 1) {
     const current = selectedPosition()
-    focusTask(
-      current.lanes[current.lane]?.tasks[current.task + direction],
-    )
+    if (current.entry) {
+      if (direction === -1) {
+        const lane = current.lanes[current.lane]
+        const task = lane?.tasks[lane.tasks.length - 1]
+        if (task) focusTask(task)
+      }
+      return
+    }
+    const lane = current.lanes[current.lane]
+    const task = lane?.tasks[current.task + direction]
+    if (task) {
+      focusTask(task)
+    } else if (direction === 1 && lane && !lane.complete) {
+      focusNewTask(lane.key)
+    }
   }
 
   function selectHorizontal(direction: -1 | 1) {
     const current = selectedPosition()
+    const start = current.lane
     for (
-      let index = current.lane + direction;
+      let index = start + direction;
       index >= 0 && index < current.lanes.length;
       index += direction
     ) {
-      const laneTasks = current.lanes[index].tasks
-      if (laneTasks.length > 0) {
+      const lane = current.lanes[index]
+      if (current.entry) {
+        const writableLane = lane && !lane.complete && writable
+        if (writableLane) {
+          focusNewTask(lane.key)
+          return
+        }
+        if (lane.tasks.length > 0) {
+          focusTask(
+            lane.tasks[
+              Math.min(
+                Math.max(current.task, 0),
+                lane.tasks.length - 1,
+              )
+            ],
+          )
+          return
+        }
+        continue
+      }
+      if (lane.tasks.length > 0) {
         focusTask(
-          laneTasks[Math.min(current.task, laneTasks.length - 1)],
+          lane.tasks[Math.min(current.task, lane.tasks.length - 1)],
         )
+        return
+      }
+      if (writable && !lane.complete) {
+        focusNewTask(lane.key)
         return
       }
     }
@@ -391,10 +406,35 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
 
   function focusTask(task: BoardTask | undefined) {
     if (!task) return
-    BoardsState.selectTask(task.id)
-    document
-      .querySelector<HTMLElement>(`[data-task-id="${task.id}"]`)
-      ?.focus()
+    state.selectTask(task.id)
+    const el = document.querySelector<HTMLElement>(
+      `[data-task-id="${task.id}"]`,
+    )
+    el?.focus()
+    const lane = lanes.find(({ tasks: laneTasks }) =>
+      laneTasks.some(({ id }) => id === task.id),
+    )
+    if (lane) scrollLaneIntoView(lane.key)
+  }
+
+  function focusNewTask(laneKey: string) {
+    state.selectNewTask(laneKey)
+    const el = document.querySelector<HTMLElement>(
+      `[data-lane-key="${laneKey}"] [data-new-task-entry]`,
+    )
+    el?.focus()
+    scrollLaneIntoView(laneKey)
+  }
+
+  function scrollLaneIntoView(laneKey: string) {
+    const el = document.querySelector<HTMLElement>(
+      `[data-lane-key="${laneKey}"]`,
+    )
+    el?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
+    })
   }
 
   function moveSelected(
@@ -434,15 +474,8 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
     }
   }
 
-  function completeTask(task: number) {
-    return action.mutateAsync(() =>
-      call.boards.task.update({
-        workspace: workspace.slug,
-        board: board.slug,
-        task,
-        complete: true,
-      }),
-    )
+  function createTask(input: TaskComposer.Input) {
+    return boards.createTask(ws, boardSlug, input)
   }
 
   function moveTask(
@@ -450,44 +483,13 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
     destination: TaskMenu.Destination,
     anchors: { before?: number | null; after?: number | null } = {},
   ) {
-    return taskMove.mutateAsync({
-      workspace: workspace.slug,
-      board: board.slug,
+    return boards.moveTask({
+      workspace: ws,
+      board: boardSlug,
       task,
       destination,
       ...anchors,
     })
-  }
-
-  function movePhaseTo(
-    source: number,
-    target: number,
-    after: boolean,
-  ) {
-    if (source === target) return
-    const moving = phases.find(({ id }) => id === source)
-    const remaining = phases.filter(({ id }) => id !== source)
-    const targetIndex = remaining.findIndex(({ id }) => id === target)
-    if (!moving || targetIndex < 0) return
-    const index = targetIndex + (after ? 1 : 0)
-    remaining.splice(index, 0, moving)
-    const movedIndex = remaining.findIndex(({ id }) => id === source)
-    const without = remaining.filter(({ id }) => id !== source)
-    return action.mutateAsync(() =>
-      call.boards.phase.move({
-        workspace: workspace.slug,
-        board: board.slug,
-        phase: source,
-        after: without[movedIndex - 1]?.id ?? null,
-        before: without[movedIndex]?.id ?? null,
-      }),
-    )
-  }
-
-  function movePhaseStep(phase: number, direction: -1 | 1) {
-    const index = phases.findIndex(({ id }) => id === phase)
-    const target = phases[index + direction]
-    if (target) movePhaseTo(phase, target.id, direction > 0)
   }
 
   const shownLanes = visibleLanes()
@@ -499,9 +501,13 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
           size="compact-sm"
           variant={state.incompleteLaneVisible ? "filled" : "default"}
           leftSection={
-            state.incompleteLaneVisible ? <PiEyeSlash /> : <PiEye />
+            state.incompleteLaneVisible ? (
+              <Icon name="eye-slash" />
+            ) : (
+              <Icon name="eye" />
+            )
           }
-          onClick={BoardsState.toggleIncompleteLane}
+          onClick={() => state.toggleIncompleteLane()}
         >
           {state.incompleteLaneVisible
             ? "Hide Incomplete"
@@ -510,8 +516,8 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
         {writable && (
           <Button
             size="compact-sm"
-            leftSection={<PiPlus />}
-            onClick={() => BoardsState.setPhaseComposerVisible(true)}
+            leftSection={<Icon name="plus" />}
+            onClick={() => state.setPhaseComposerVisible(true)}
           >
             Add phase
           </Button>
@@ -520,9 +526,13 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
           size="compact-sm"
           variant={state.completeLaneVisible ? "filled" : "default"}
           leftSection={
-            state.completeLaneVisible ? <PiEyeSlash /> : <PiEye />
+            state.completeLaneVisible ? (
+              <Icon name="eye-slash" />
+            ) : (
+              <Icon name="eye" />
+            )
           }
-          onClick={BoardsState.toggleCompleteLane}
+          onClick={() => state.toggleCompleteLane()}
         >
           {state.completeLaneVisible
             ? "Hide Complete"
@@ -531,14 +541,16 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
       </div>
       {state.phaseComposerVisible && (
         <PhaseComposer
-          creating={createPhase.isPending}
-          onCreate={createPhase.mutateAsync}
-          onCreated={() => BoardsState.setPhaseComposerVisible(false)}
-          onCancel={() => BoardsState.setPhaseComposerVisible(false)}
+          creating={boards.creatingPhase}
+          onCreate={(input) =>
+            boards.createPhase(ws, boardSlug, input)
+          }
+          onCreated={() => state.setPhaseComposerVisible(false)}
+          onCancel={() => state.setPhaseComposerVisible(false)}
         />
       )}
       <div
-        className={classes.phaseScroller}
+        className={`${classes.phaseScroller} ${scrollbarClasses.scrollbar}`}
         aria-label="Phase lanes"
         data-drag-scroll
       >
@@ -558,16 +570,21 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
                     ? state.selectedTask
                     : null
                 }
+                selectedNewTask={
+                  state.selectedNewTask === lane.key ? lane.key : null
+                }
                 editing={
                   phaseID !== undefined &&
                   state.activePhaseEditor === phaseID
                 }
+                editingTask={editingTask}
                 taskComposerOpen={
                   !lane.complete &&
                   state.taskComposerVisible &&
                   state.taskComposerPhase === (phaseID ?? null)
                 }
-                creatingTask={createTask.isPending}
+                creatingTask={boards.creatingTask}
+                movingTask={boards.pendingMove}
                 phaseDragHandle={
                   phaseID === undefined
                     ? undefined

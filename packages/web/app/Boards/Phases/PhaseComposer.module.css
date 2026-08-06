@@ -1,0 +1,9 @@
+.composerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+.titleInput {
+  flex: 1;
+}
