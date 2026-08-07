@@ -44,40 +44,40 @@
 
 ## 6. Split `Phases` (was `PhasesView`, 659 lines)
 
-- [ ] 6.1 Extract `Phases/lanes.ts` — pure `makeLanes`, `laneDestination`, `Lane` type (no React import).
-- [ ] 6.2 Extract `Phases/usePhaseKeyboard.ts` — selection/nav behavior (`selectVertical/Horizontal`, `focusTask`, `focusNewTask`, `moveSelected`, `selectedPosition`, `visibleLanes`, `scrollLaneIntoView`) + `useKeyboardShortcuts` wiring.
-- [ ] 6.3 Extract `Phases/phaseCommands.ts` — the `PhaseLaneCommands` builder.
-- [ ] 6.4 Extract `Phases/usePhaseDrag.ts` — `usePointerDrag` config (`resolveTarget`, `onDrop`) + handle maps.
-- [ ] 6.5 Extract `Phases/LaneControls.tsx` — the show/hide/add-phase toolbar (presentation).
-- [ ] 6.6 Extract `Phases/PhaseStrip.tsx` — the scroller + lane map (presentation).
-- [ ] 6.7 Reduce `Phases/Phases.tsx` to composition; remove its `oxlint-disable eslint/complexity`.
+- [x] 6.1 Extract `Phases/lanes.ts` — pure `makeLanes`, `laneDestination`, `Lane` type (no React import).
+- [x] 6.2 Extract `Phases/usePhaseKeyboard.ts` — selection/nav behavior (`selectVertical/Horizontal`, `focusTask`, `focusNewTask`, `moveSelected`, `selectedPosition`, `visibleLanes`, `scrollLaneIntoView`) + `useKeyboardShortcuts` wiring.
+- [x] 6.3 Extract `Phases/phaseCommands.ts` — the `PhaseLaneCommands` builder.
+- [x] 6.4 Extract `Phases/usePhaseDrag.ts` — `usePointerDrag` config (`resolveTarget`, `onDrop`) + handle maps.
+- [x] 6.5 Extract `Phases/LaneControls.tsx` — the show/hide/add-phase toolbar (presentation).
+- [x] 6.6 Extract `Phases/PhaseStrip.tsx` — the scroller + lane map (presentation).
+- [x] 6.7 Reduce `Phases/Phases.tsx` to composition; remove its `oxlint-disable eslint/complexity`.
 
 ## 7. Split `Browse` (was `BoardsIndex`, 442 lines)
 
-- [ ] 7.1 Extract `Browse/ResourceButton.tsx` and `Browse/InlineName.tsx` (presentation).
-- [ ] 7.2 Extract `Browse/useBrowseKeyboard.ts` — `workspaceKeys` / `boardKeys`.
-- [ ] 7.3 Move pure helpers `slugify`, `typing` to `common/` (verify no existing duplicate first).
-- [ ] 7.4 Reduce `Browse/Browse.tsx` to composition; remove its `oxlint-disable eslint/complexity`.
+- [x] 7.1 Extract `Browse/ResourceButton.tsx` and `Browse/InlineName.tsx` (presentation).
+- [x] 7.2 Extract `Browse/useBrowseKeyboard.ts` — `workspaceKeys` / `boardKeys`.
+- [x] 7.3 Move pure helpers `slugify`, `typing` to `common/` (verify no existing duplicate first).
+- [x] 7.4 Reduce `Browse/Browse.tsx` to composition; remove its `oxlint-disable eslint/complexity`.
 
 ## 8. Split `List` (was `ListView`, 382 lines)
 
-- [ ] 8.1 Extract pure helpers and any keyboard/behavior into `List/*` hooks.
-- [ ] 8.2 Pull large presentational subtrees into their own files; keep `TaskRow` as-is or split further if it carries behavior.
-- [ ] 8.3 Reduce `List/List.tsx` to composition; remove its `oxlint-disable eslint/complexity`.
+- [x] 8.1 Extract pure helpers and any keyboard/behavior into `List/*` hooks.
+- [x] 8.2 Pull large presentational subtrees into their own files; keep `TaskRow` as-is or split further if it carries behavior.
+- [x] 8.3 Reduce `List/List.tsx` to composition; remove its `oxlint-disable eslint/complexity`.
 
 ## 9. Split `Phases/PhaseLane.tsx` (253 lines)
 
-- [ ] 9.1 Separate the lane's presentation from its behavior/handlers.
-- [ ] 9.2 Remove its `oxlint-disable eslint/complexity`.
+- [x] 9.1 Separate the lane's presentation from its behavior/handlers.
+- [x] 9.2 Remove its `oxlint-disable eslint/complexity`.
 
 ## 10. Extract `Boards.tsx` data hook
 
-- [ ] 10.1 Add `Boards/useBoardData.ts` — the three load effects + derived guard state as a discriminated result (loading / error / workspace-not-found / invalid-task / ready).
-- [ ] 10.2 Reduce `Boards.tsx` to guard rendering + routing between `Board` and `Browse`; remove its `oxlint-disable eslint/complexity`.
+- [x] 10.1 Add `Boards/useBoardData.ts` — the three load effects + derived guard state as a discriminated result (loading / error / workspace-not-found / invalid-task / ready).
+- [x] 10.2 Reduce `Boards.tsx` to guard rendering + routing between `Board` and `Browse`; remove its `oxlint-disable eslint/complexity`.
 
 ## 11. Verify Step 2
 
-- [ ] 11.1 No file contains `oxlint-disable eslint/complexity`.
-- [ ] 11.2 Lint / typecheck / build pass with the suppressions removed.
-- [ ] 11.3 Existing tests pass.
+- [x] 11.1 No file contains `oxlint-disable eslint/complexity`.
+- [x] 11.2 Lint / typecheck / build pass with the suppressions removed.
+- [x] 11.3 Existing tests pass.
 - [ ] 11.4 Manual smoke across List and Phases: keyboard nav (arrows, Enter, F2, Delete, Ctrl+arrows), drag-and-drop, task/phase create, drawers. No behavior change.

@@ -1,6 +1,4 @@
 import { AppShell } from "@mantine/core"
-import { useUI } from "@/state"
-import Nav from "./Navigation"
 import Tweaks from "@/Layout/Tweaks"
 import Routes from "@/Layout/Routes"
 import Header from "@/Layout/Header"

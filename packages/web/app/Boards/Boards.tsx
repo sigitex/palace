@@ -1,70 +1,34 @@
-// oxlint-disable eslint/complexity
 import Board from "@/Boards/Board"
 import classes from "@/Boards/Boards.module.css"
 import Browse from "@/Boards/Browse"
-import { useBoards } from "@/state"
+import { useBoardData } from "@/Boards/useBoardData"
 import { Alert, Loader, Stack } from "@mantine/core"
-import { useEffect } from "react"
 
 export default function Boards({
   workspace,
   board,
   task,
 }: Boards.Props) {
-  const boards = useBoards()
-  const { workspaces, boards: boardList, aggregate } = boards
+  const data = useBoardData(workspace, board, task)
 
-  useEffect(() => {
-    boards.loadWorkspaces()
-  }, [])
-
-  useEffect(() => {
-    if (workspace) {
-      boards.loadBoards(workspace)
-    }
-  }, [workspace])
-
-  useEffect(() => {
-    if (workspace && board) {
-      boards.loadAggregate(workspace, board)
-    } else {
-      boards.clearAggregate()
-    }
-  }, [workspace, board])
-
-  const boardData =
-    aggregate.data?.board.slug === board &&
-    aggregate.data?.workspace.slug === workspace
-      ? aggregate.data
-      : null
-
-  const error = workspaces.error ?? boardList.error ?? aggregate.error
-  if (
-    !error &&
-    (workspaces.loading ||
-      (workspace && boardList.loading) ||
-      (board && !boardData))
-  ) {
+  if (data.status === "loading") {
     return <Loader aria-label="Loading Boards" />
   }
-  if (error) {
+  if (data.status === "error") {
     return (
       <Alert color="red" title="Boards unavailable">
-        {error}
+        {data.message}
       </Alert>
     )
   }
-  if (
-    workspace &&
-    !workspaces.data?.some(({ slug }) => slug === workspace)
-  ) {
+  if (data.status === "workspace-not-found") {
     return (
       <Alert color="yellow" title="Workspace not found">
         Workspace is missing or inaccessible.
       </Alert>
     )
   }
-  if (task !== undefined && (!Number.isInteger(task) || task < 0)) {
+  if (data.status === "invalid-task") {
     return (
       <Alert color="yellow" title="Task not found">
         Task ID is invalid.
@@ -74,16 +38,16 @@ export default function Boards({
 
   return (
     <Stack className={classes.page}>
-      {boardData ? (
+      {data.board ? (
         <Board
-          key={boardData.board.id}
-          aggregate={boardData}
+          key={data.board.board.id}
+          aggregate={data.board}
           taskID={task}
         />
       ) : (
         <Browse
-          workspaces={workspaces.data ?? []}
-          boardList={boardList.data ?? []}
+          workspaces={data.workspaces}
+          boardList={data.boardList}
           selectedWorkspace={workspace}
         />
       )}

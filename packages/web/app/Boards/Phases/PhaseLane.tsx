@@ -1,57 +1,13 @@
-// oxlint-disable eslint/complexity
-import type { usePointerDrag } from "@/common/usePointerDrag"
+import type { Lane } from "@/Boards/Phases/Lane"
+import type { PhaseLaneCommands } from "@/Boards/Phases/PhaseLaneCommands"
+import { PhaseLaneHeader } from "@/Boards/Phases/PhaseLaneHeader"
+import { PhaseLaneTasks } from "@/Boards/Phases/PhaseLaneTasks"
 import { InlinePhaseEditor } from "@/Boards/Phases/InlinePhaseEditor"
-import { NewTaskEntry } from "@/Boards/Task/NewTaskEntry"
 import classes from "@/Boards/Phases/Phases.module.css"
-import scrollbarClasses from "@/common/Scrollbars.module.css"
-import {
-  TaskCard,
-  type TaskCardCommands,
-} from "@/Boards/Phases/TaskCard"
-import { TaskComposer } from "@/Boards/Task/TaskComposer"
-import { useBoardsView } from "@/state"
-import { BoardIcon } from "@/common/BoardIcon"
-import {
-  ActionIcon,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  Tooltip,
-} from "@mantine/core"
+import type { usePointerDrag } from "@/common/usePointerDrag"
+import { Paper } from "@mantine/core"
 import { memo } from "react"
-import { Icon } from "@/common/Icon"
-import type {
-  BoardColor,
-  BoardIcon as BoardIconKey,
-  BoardPhase,
-  BoardTask,
-} from "shared/models"
-
-export type Lane = {
-  key: string
-  title: string
-  phase: BoardPhase | null
-  complete: boolean
-  tasks: BoardTask[]
-}
-
-export type PhaseLaneCommands = TaskCardCommands & {
-  editPhase: (phaseID: number | null) => void
-  movePhase: (phaseID: number, direction: -1 | 1) => void
-  openTaskComposer: (phase: number | null) => void
-  closeTaskComposer: () => void
-  createTask: (input: TaskComposer.Input) => Promise<BoardTask>
-  savePhase: (
-    phaseID: number,
-    metadata: {
-      title: string
-      color: BoardColor
-      icon: BoardIconKey | null
-    },
-  ) => Promise<unknown>
-  deletePhase: (phaseID: number) => Promise<unknown>
-}
+import type { BoardPhase } from "shared/models"
 
 export type PhaseLaneProps = {
   lane: Lane
@@ -85,7 +41,6 @@ export const PhaseLane = memo(
     taskDragHandles,
     commands,
   }: PhaseLaneProps) => {
-    const view = useBoardsView()
     const laneStyle = {
       "--lane-color": lane.phase
         ? `var(--mantine-color-${lane.phase.color}-6)`
@@ -117,135 +72,27 @@ export const PhaseLane = memo(
             onDelete={() => commands.deletePhase(lane.phase!.id)}
           />
         ) : (
-          <Group justify="space-between" wrap="nowrap" mb="sm">
-            <Group
-              gap="xs"
-              wrap="nowrap"
-              className={classes.phaseTitle}
-            >
-              {phaseDragHandle && writable && (
-                <ActionIcon
-                  variant="subtle"
-                  className={classes.dragHandle}
-                  aria-label={`Drag phase ${lane.title}`}
-                  onKeyDown={(event) => {
-                    if (
-                      event.key === "ArrowLeft" ||
-                      event.key === "ArrowRight"
-                    ) {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      commands.movePhase(
-                        lane.phase!.id,
-                        event.key === "ArrowLeft" ? -1 : 1,
-                      )
-                    }
-                  }}
-                  {...phaseDragHandle}
-                >
-                  <Icon name="dots-six-vertical" />
-                </ActionIcon>
-              )}
-              {lane.phase?.icon ? (
-                <BoardIcon icon={lane.phase.icon} aria-hidden />
-              ) : lane.complete ? (
-                <Icon name="check-circle" aria-hidden />
-              ) : !lane.phase ? (
-                <Icon name="circle-dashed" aria-hidden />
-              ) : null}
-              <Text fw={700} truncate>
-                {lane.title}
-              </Text>
-              <Text size="xs" c="dimmed">
-                {lane.tasks.length}
-              </Text>
-            </Group>
-            <Group gap={4} wrap="nowrap">
-              {lane.phase && writable && (
-                <Tooltip label={`Edit ${lane.title}`}>
-                  <ActionIcon
-                    variant="subtle"
-                    aria-label={`Edit ${lane.title}`}
-                    onClick={() => commands.editPhase(lane.phase!.id)}
-                  >
-                    <Icon name="pencil-simple" />
-                  </ActionIcon>
-                </Tooltip>
-              )}
-              {!lane.complete && writable && (
-                <Tooltip label={`Add task to ${lane.title}`}>
-                  <ActionIcon
-                    variant="subtle"
-                    aria-label={`Add task to ${lane.title}`}
-                    onClick={() =>
-                      commands.openTaskComposer(
-                        lane.phase?.id ?? null,
-                      )
-                    }
-                  >
-                    <Icon name="plus" />
-                  </ActionIcon>
-                </Tooltip>
-              )}
-            </Group>
-          </Group>
+          <PhaseLaneHeader
+            lane={lane}
+            writable={writable}
+            phaseDragHandle={phaseDragHandle}
+            commands={commands}
+          />
         )}
         {!editing && (
-          <Stack
-            gap="xs"
-            className={`${classes.laneTaskList} ${scrollbarClasses.scrollbar}`}
-          >
-            {lane.tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                phases={phases}
-                phase={lane.phase}
-                lane={lane.key}
-                writable={writable}
-                selected={selectedTask === task.id}
-                editing={editingTask === task.id}
-                moving={task.id === movingTask}
-                dragHandle={taskDragHandles.get(task.id)!}
-                commands={commands}
-              />
-            ))}
-            {lane.tasks.length === 0 &&
-              !taskComposerOpen &&
-              !writable && (
-                <Text size="sm" c="dimmed" ta="center" py="lg">
-                  No tasks
-                </Text>
-              )}
-            {(taskComposerOpen || (writable && !lane.complete)) && (
-              <div className={classes.stickyFooter}>
-                {taskComposerOpen ? (
-                  <TaskComposer
-                    phases={phases}
-                    defaultPhase={lane.phase?.id ?? null}
-                    showPhase={false}
-                    creating={creatingTask}
-                    onCreate={commands.createTask}
-                    onCreated={(task) => {
-                      commands.closeTaskComposer()
-                      view.addPendingTask(task.id)
-                      commands.select(task.id)
-                    }}
-                    onCancel={commands.closeTaskComposer}
-                  />
-                ) : (
-                  <NewTaskEntry
-                    selected={selectedNewTask === lane.key}
-                    onActivate={() =>
-                      commands.openTaskComposer(
-                        lane.phase?.id ?? null,
-                      )
-                    }
-                  />
-                )}
-              </div>
-            )}
-          </Stack>
+          <PhaseLaneTasks
+            lane={lane}
+            phases={phases}
+            writable={writable}
+            selectedTask={selectedTask}
+            selectedNewTask={selectedNewTask}
+            editingTask={editingTask}
+            taskComposerOpen={taskComposerOpen}
+            creatingTask={creatingTask}
+            movingTask={movingTask}
+            taskDragHandles={taskDragHandles}
+            commands={commands}
+          />
         )}
       </Paper>
     )
