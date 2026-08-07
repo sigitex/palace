@@ -1,6 +1,6 @@
 import classes from "@/Boards/Task/TaskDrawer.module.css"
 import { useBoards } from "@/state"
-import { DeletePopover } from "@/Boards/Shared/DeletePopover"
+import { DeletePopover } from "@/common/DeletePopover"
 import { TaskStateSelector } from "@/Boards/Task/TaskStateSelector"
 import {
   Button,
@@ -16,7 +16,7 @@ import { useEffect, useState } from "react"
 import { Icon } from "@/common/Icon"
 import ReactMarkdown from "react-markdown"
 import { useLocation } from "wouter"
-import { BoardsPath } from "shared/BoardsPath"
+import { path } from "shared/routes"
 import type { BoardAggregate, BoardTask } from "shared/models"
 
 // oxlint-disable-next-line eslint/complexity
@@ -63,7 +63,7 @@ export function TaskDrawer({
     if (globalThis.history.state?.boardsTaskOrigin) {
       globalThis.history.back()
     } else {
-      navigate(BoardsPath.board(workspace.slug, board.slug), {
+      navigate(path.boards.board(workspace.slug, board.slug), {
         replace: true,
       })
     }

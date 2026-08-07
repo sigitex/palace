@@ -1,4 +1,4 @@
-import classes from "@/Boards/Presentation/PresentationSelector.module.css"
+import classes from "@/Boards/Appearance/Appearance.module.css"
 import {
   ColorSwatch,
   Group,
@@ -8,11 +8,11 @@ import {
 import { Icon } from "@/common/Icon"
 import { BOARD_COLORS, type BoardColor } from "shared/models"
 
-export function ColorSelector({
+export function ColorPicker({
   color,
   onChange,
   required = false,
-}: ColorSelector.Props) {
+}: ColorPicker.Props) {
   return (
     <Input.Wrapper label="Color">
       <Group gap="xs" mt={4}>
@@ -47,7 +47,7 @@ export function ColorSelector({
   )
 }
 
-export namespace ColorSelector {
+export namespace ColorPicker {
   export type Props = {
     color: BoardColor | null
     onChange: (color: BoardColor | null) => void

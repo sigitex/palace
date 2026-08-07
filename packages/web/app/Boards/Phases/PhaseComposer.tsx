@@ -1,4 +1,4 @@
-import { PresentationSelector } from "@/Boards/Presentation/PresentationSelector"
+import Appearance from "@/Boards/Appearance"
 import classes from "@/Boards/Phases/PhaseComposer.module.css"
 import {
   ActionIcon,
@@ -71,7 +71,7 @@ export function PhaseComposer({
             <Icon name="check" />
           </ActionIcon>
         </Group>
-        <PresentationSelector
+        <Appearance
           color={color}
           icon={icon}
           colorRequired

@@ -1,6 +1,6 @@
 import { useBoards } from "@/state"
-import { PresentationSelector } from "@/Boards/Presentation/PresentationSelector"
-import { DeletePopover } from "@/Boards/Shared/DeletePopover"
+import Appearance from "@/Boards/Appearance"
+import { DeletePopover } from "@/common/DeletePopover"
 import {
   Button,
   Divider,
@@ -11,7 +11,7 @@ import {
 } from "@mantine/core"
 import { useEffect, useState } from "react"
 import { useLocation } from "wouter"
-import { BoardsPath } from "shared/BoardsPath"
+import { path } from "shared/routes"
 import type {
   BoardAggregate,
   BoardColor,
@@ -54,11 +54,11 @@ export function BoardDrawer({
         />
         <TextInput
           label="Slug"
-          description={`New URL: ${BoardsPath.board(workspace.slug, slug || board.slug)}`}
+          description={`New URL: ${path.boards.board(workspace.slug, slug || board.slug)}`}
           value={slug}
           onChange={(event) => setSlug(event.currentTarget.value)}
         />
-        <PresentationSelector
+        <Appearance
           color={color}
           icon={icon}
           onColorChange={setColor}
@@ -73,7 +73,7 @@ export function BoardDrawer({
               icon,
             })
             if (slug !== board.slug)
-              navigate(BoardsPath.board(workspace.slug, slug))
+              navigate(path.boards.board(workspace.slug, slug))
           }}
         >
           Save board
@@ -85,7 +85,7 @@ export function BoardDrawer({
           onDelete={async () => {
             await boards.deleteBoard(workspace.slug, board.slug)
             onClose()
-            navigate(BoardsPath.workspace(workspace.slug))
+            navigate(path.boards.workspace(workspace.slug))
           }}
         >
           <Button color="red">Delete board</Button>

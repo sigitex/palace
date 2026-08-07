@@ -1,6 +1,6 @@
 import { useBoards } from "@/state"
-import { PresentationSelector } from "@/Boards/Presentation/PresentationSelector"
-import { DeletePopover } from "@/Boards/Shared/DeletePopover"
+import Appearance from "@/Boards/Appearance"
+import { DeletePopover } from "@/common/DeletePopover"
 import {
   Alert,
   Button,
@@ -15,7 +15,7 @@ import {
 } from "@mantine/core"
 import { useEffect, useState } from "react"
 import { useLocation } from "wouter"
-import { BoardsPath } from "shared/BoardsPath"
+import { path } from "shared/routes"
 import type {
   BoardColor,
   BoardIcon,
@@ -83,11 +83,11 @@ export function WorkspaceDrawer({
             />
             <TextInput
               label="Slug"
-              description={`New URL: ${BoardsPath.workspace(slug || workspace.slug)}`}
+              description={`New URL: ${path.boards.workspace(slug || workspace.slug)}`}
               value={slug}
               onChange={(event) => setSlug(event.currentTarget.value)}
             />
-            <PresentationSelector
+            <Appearance
               color={color}
               icon={icon}
               onColorChange={setColor}
@@ -105,7 +105,7 @@ export function WorkspaceDrawer({
                     icon,
                   })
                   if (slug !== workspace.slug)
-                    navigate(BoardsPath.workspace(slug))
+                    navigate(path.boards.workspace(slug))
                 } finally {
                   setSaving(false)
                 }
@@ -191,7 +191,7 @@ export function WorkspaceDrawer({
                 try {
                   await boards.deleteWorkspace(workspace.slug)
                   onClose()
-                  navigate(BoardsPath.index)
+                  navigate(path.boards.index)
                 } catch (error) {
                   setDeleteError(
                     error instanceof Error

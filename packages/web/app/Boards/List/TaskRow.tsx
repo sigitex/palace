@@ -1,8 +1,8 @@
-import classes from "@/Boards/List/ListView.module.css"
-import { DeletePopover } from "@/Boards/Shared/DeletePopover"
+import classes from "@/Boards/List/List.module.css"
+import { DeletePopover } from "@/common/DeletePopover"
 import { TaskMenu } from "@/Boards/Task/TaskMenu"
 import { TaskStateSelector } from "@/Boards/Task/TaskStateSelector"
-import type { usePointerDrag } from "@/Boards/Drag/usePointerDrag"
+import type { usePointerDrag } from "@/common/usePointerDrag"
 import {
   ActionIcon,
   Checkbox,

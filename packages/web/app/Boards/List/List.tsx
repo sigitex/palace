@@ -1,9 +1,9 @@
 // oxlint-disable eslint/complexity
-import { usePointerDrag } from "@/Boards/Drag/usePointerDrag"
-import classes from "@/Boards/List/ListView.module.css"
+import { usePointerDrag } from "@/common/usePointerDrag"
+import classes from "@/Boards/List/List.module.css"
 import { TaskRow, type TaskRowCommands } from "@/Boards/List/TaskRow"
-import { NewTaskEntry } from "@/Boards/Shared/NewTaskEntry"
-import scrollbarClasses from "@/Boards/Shared/Scrollbars.module.css"
+import { NewTaskEntry } from "@/Boards/Task/NewTaskEntry"
+import scrollbarClasses from "@/common/Scrollbars.module.css"
 import { useBoards, useBoardsView } from "@/state"
 import { TaskComposer } from "@/Boards/Task/TaskComposer"
 import {
@@ -17,7 +17,7 @@ import { useMemo, useRef, useState } from "react"
 import { Icon } from "@/common/Icon"
 import type { BoardAggregate } from "shared/models"
 
-export function ListView({ aggregate, onOpen }: ListView.Props) {
+export default function List({ aggregate, onOpen }: List.Props) {
   const { workspace, board, phases, tasks } = aggregate
   const state = useBoardsView()
   const boards = useBoards()
@@ -335,7 +335,7 @@ export function ListView({ aggregate, onOpen }: ListView.Props) {
   )
 }
 
-export namespace ListView {
+export namespace List {
   export type Props = {
     aggregate: BoardAggregate
     onOpen: (taskID: number) => void

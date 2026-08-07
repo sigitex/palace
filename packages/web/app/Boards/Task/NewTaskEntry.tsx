@@ -1,4 +1,4 @@
-import classes from "@/Boards/Shared/NewTaskEntry.module.css"
+import classes from "@/Boards/Task/NewTaskEntry.module.css"
 import { Icon } from "@/common/Icon"
 
 export function NewTaskEntry({

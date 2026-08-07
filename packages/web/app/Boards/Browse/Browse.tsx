@@ -1,6 +1,6 @@
 // oxlint-disable eslint/complexity
-import classes from "@/Boards/Index/BoardsIndex.module.css"
-import { WorkspaceDrawer } from "@/Boards/Index/WorkspaceDrawer"
+import classes from "@/Boards/Browse/Browse.module.css"
+import { WorkspaceDrawer } from "@/Boards/Browse/WorkspaceDrawer"
 import { BoardIcon } from "@/common/BoardIcon"
 import { useBoards, useBoardsView, useSession } from "@/state"
 import {
@@ -15,14 +15,14 @@ import {
 import { useEffect, useState, type KeyboardEvent } from "react"
 import { Icon } from "@/common/Icon"
 import { useLocation } from "wouter"
-import { BoardsPath } from "shared/BoardsPath"
+import { path } from "shared/routes"
 import type { Board, Workspace } from "shared/models"
 
-export function BoardsIndex({
+export default function Browse({
   workspaces,
   boardList,
   selectedWorkspace,
-}: BoardsIndex.Props) {
+}: Browse.Props) {
   const [, navigate] = useLocation()
   const session = useSession()
   const boards = useBoards()
@@ -90,7 +90,7 @@ export function BoardsIndex({
             Math.min(workspaces.length - 1, current + delta),
           )
         ]
-      if (next) navigate(BoardsPath.workspace(next.slug))
+      if (next) navigate(path.boards.workspace(next.slug))
     } else if (event.key === "ArrowRight" && focusedSlug) {
       event.preventDefault()
       sessionStorage.setItem("boards-focus-pane", "board")
@@ -98,10 +98,10 @@ export function BoardsIndex({
         sessionStorage.removeItem("boards-focus-pane")
         document.querySelector<HTMLElement>("[data-board]")?.focus()
       } else {
-        navigate(BoardsPath.workspace(focusedSlug))
+        navigate(path.boards.workspace(focusedSlug))
       }
     } else if (event.key === "Enter" && focusedSlug) {
-      navigate(BoardsPath.workspace(focusedSlug))
+      navigate(path.boards.workspace(focusedSlug))
     } else if (event.key === "F2" && selected?.palace_admin) {
       event.preventDefault()
       setRenaming("workspace")
@@ -139,7 +139,7 @@ export function BoardsIndex({
           "boards-focus-workspace",
           selected.slug,
         )
-        navigate(BoardsPath.index)
+        navigate(path.boards.index)
       } else {
         document
           .querySelector<HTMLElement>(
@@ -148,7 +148,7 @@ export function BoardsIndex({
           ?.focus()
       }
     } else if (event.key === "Enter" && currentSlug && selected) {
-      navigate(BoardsPath.board(selected.slug, currentSlug))
+      navigate(path.boards.board(selected.slug, currentSlug))
     } else if (event.key === "F2" && currentSlug && canWrite) {
       event.preventDefault()
       setRenamingBoard(currentSlug)
@@ -189,7 +189,7 @@ export function BoardsIndex({
               selected={workspace.slug === selectedWorkspace}
               dataWorkspace={workspace.slug}
               onOpen={() =>
-                navigate(BoardsPath.workspace(workspace.slug))
+                navigate(path.boards.workspace(workspace.slug))
               }
             />
           ))}
@@ -207,7 +207,7 @@ export function BoardsIndex({
                   manager_group: 2,
                 })
                 setDraft(null)
-                navigate(BoardsPath.workspace(slug))
+                navigate(path.boards.workspace(slug))
               }}
             />
           )}
@@ -240,7 +240,7 @@ export function BoardsIndex({
                 className={classes.mobileBack}
                 variant="subtle"
                 leftSection={<Icon name="arrow-left" />}
-                onClick={() => navigate(BoardsPath.index)}
+                onClick={() => navigate(path.boards.index)}
               >
                 Workspaces
               </Button>
@@ -299,7 +299,7 @@ export function BoardsIndex({
                   tinted
                   onOpen={() =>
                     navigate(
-                      BoardsPath.board(selected.slug, board.slug),
+                      path.boards.board(selected.slug, board.slug),
                     )
                   }
                 />
@@ -318,7 +318,7 @@ export function BoardsIndex({
                   icon: null,
                 })
                 setDraft(null)
-                navigate(BoardsPath.board(selected.slug, slug))
+                navigate(path.boards.board(selected.slug, slug))
               }}
             />
           )}
@@ -335,7 +335,7 @@ export function BoardsIndex({
   )
 }
 
-export namespace BoardsIndex {
+export namespace Browse {
   export type Props = {
     workspaces: Workspace[]
     boardList: Board[]

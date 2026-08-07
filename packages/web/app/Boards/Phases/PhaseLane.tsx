@@ -1,9 +1,9 @@
 // oxlint-disable eslint/complexity
-import type { usePointerDrag } from "@/Boards/Drag/usePointerDrag"
+import type { usePointerDrag } from "@/common/usePointerDrag"
 import { InlinePhaseEditor } from "@/Boards/Phases/InlinePhaseEditor"
-import { NewTaskEntry } from "@/Boards/Shared/NewTaskEntry"
-import classes from "@/Boards/Phases/PhasesView.module.css"
-import scrollbarClasses from "@/Boards/Shared/Scrollbars.module.css"
+import { NewTaskEntry } from "@/Boards/Task/NewTaskEntry"
+import classes from "@/Boards/Phases/Phases.module.css"
+import scrollbarClasses from "@/common/Scrollbars.module.css"
 import {
   TaskCard,
   type TaskCardCommands,

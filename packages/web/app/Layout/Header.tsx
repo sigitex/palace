@@ -1,23 +1,27 @@
 import { HeaderContainer } from "./Header.css";
 import Auth from "@/common/Auth";
 import HeaderTab from "@/Layout/HeaderTab";
-import { BoardsPath } from "shared/BoardsPath";
+import { routes, path } from "shared/routes";
 import { Icons } from "@/common/Icons";
 
 export default function Header() {
   return (
     <HeaderContainer>
-      <HeaderTab to="/" label="Home" icon={Icons.Home} />
+      <HeaderTab to={routes.app.home} label="Home" icon={Icons.Home} />
       <Auth>
         <HeaderTab
-          to={BoardsPath.index}
+          to={path.boards.index}
           label="Boards"
           icon={Icons.Boards}
           nested
         />
       </Auth>
       <Auth allow="finch">
-        <HeaderTab to="/family" label="Family" icon={Icons.Family} />
+        <HeaderTab
+          to={routes.app.family}
+          label="Family"
+          icon={Icons.Family}
+        />
       </Auth>
       <Auth allow="finch">
         <HeaderTab to="/budget" label="Budget" icon={Icons.Budget} />

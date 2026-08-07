@@ -1,4 +1,4 @@
-import classes from "@/Boards/Presentation/PresentationSelector.module.css"
+import classes from "@/Boards/Appearance/Appearance.module.css"
 import { BoardIcon } from "@/common/BoardIcon"
 import {
   ActionIcon,
@@ -18,11 +18,11 @@ import type { BoardIcon as BoardIconKey } from "shared/models"
 
 const PAGE_SIZE = 48
 
-export function IconSelector({
+export function IconPicker({
   icon,
   onChange,
   required = false,
-}: IconSelector.Props) {
+}: IconPicker.Props) {
   const [opened, setOpened] = useState(false)
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
@@ -126,7 +126,7 @@ export function IconSelector({
   )
 }
 
-export namespace IconSelector {
+export namespace IconPicker {
   export type Props = {
     icon: BoardIconKey | null
     onChange: (icon: BoardIconKey | null) => void

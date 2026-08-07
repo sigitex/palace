@@ -1,7 +1,7 @@
 // oxlint-disable eslint/complexity
-import { BoardView } from "@/Boards/Board/BoardView"
+import Board from "@/Boards/Board"
 import classes from "@/Boards/Boards.module.css"
-import { BoardsIndex } from "@/Boards/Index/BoardsIndex"
+import Browse from "@/Boards/Browse"
 import { useBoards } from "@/state"
 import { Alert, Loader, Stack } from "@mantine/core"
 import { useEffect } from "react"
@@ -75,13 +75,13 @@ export default function Boards({
   return (
     <Stack className={classes.page}>
       {boardData ? (
-        <BoardView
+        <Board
           key={boardData.board.id}
           aggregate={boardData}
           taskID={task}
         />
       ) : (
-        <BoardsIndex
+        <Browse
           workspaces={workspaces.data ?? []}
           boardList={boardList.data ?? []}
           selectedWorkspace={workspace}

@@ -1,7 +1,7 @@
 import { BoardDrawer } from "@/Boards/Board/BoardDrawer"
-import classes from "@/Boards/Board/BoardView.module.css"
-import { ListView } from "@/Boards/List/ListView"
-import { PhasesView } from "@/Boards/Phases/PhasesView"
+import classes from "@/Boards/Board/Board.module.css"
+import List from "@/Boards/List"
+import Phases from "@/Boards/Phases"
 import { TaskDrawer } from "@/Boards/Task/TaskDrawer"
 import { BoardIcon } from "@/common/BoardIcon"
 import { useBoardsView } from "@/state"
@@ -21,10 +21,10 @@ import {
 } from "react"
 import { Icon } from "@/common/Icon"
 import { useLocation } from "wouter"
-import { BoardsPath } from "shared/BoardsPath"
+import { path } from "shared/routes"
 import type { BoardAggregate, BoardTask } from "shared/models"
 
-export function BoardView({ aggregate, taskID }: BoardView.Props) {
+export default function Board({ aggregate, taskID }: Board.Props) {
   const { board, workspace, tasks } = aggregate
   const [, navigate] = useLocation()
   const boardID = board.id
@@ -64,7 +64,7 @@ export function BoardView({ aggregate, taskID }: BoardView.Props) {
   const openTask = useCallback(
     (id: number) => {
       state.selectTask(id)
-      navigate(BoardsPath.task(workspace.slug, board.slug, id), {
+      navigate(path.boards.task(workspace.slug, board.slug, id), {
         state: { boardsTaskOrigin: true },
       })
     },
@@ -143,14 +143,14 @@ export function BoardView({ aggregate, taskID }: BoardView.Props) {
           pt="md"
           className={classes.listPanel}
         >
-          <ListView aggregate={aggregate} onOpen={openTask} />
+          <List aggregate={aggregate} onOpen={openTask} />
         </Tabs.Panel>
         <Tabs.Panel
           value="phases"
           pt="md"
           className={classes.phasesPanel}
         >
-          <PhasesView aggregate={aggregate} onOpen={openTask} />
+          <Phases aggregate={aggregate} onOpen={openTask} />
         </Tabs.Panel>
       </Tabs>
 
@@ -177,7 +177,7 @@ export function BoardView({ aggregate, taskID }: BoardView.Props) {
   )
 }
 
-export namespace BoardView {
+export namespace Board {
   export type Props = {
     aggregate: BoardAggregate
     taskID?: number

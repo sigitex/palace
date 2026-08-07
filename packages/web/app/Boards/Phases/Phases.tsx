@@ -1,13 +1,13 @@
 // oxlint-disable eslint/complexity
-import { usePointerDrag } from "@/Boards/Drag/usePointerDrag"
+import { usePointerDrag } from "@/common/usePointerDrag"
 import { PhaseComposer } from "@/Boards/Phases/PhaseComposer"
 import {
   PhaseLane,
   type Lane,
   type PhaseLaneCommands,
 } from "@/Boards/Phases/PhaseLane"
-import classes from "@/Boards/Phases/PhasesView.module.css"
-import scrollbarClasses from "@/Boards/Shared/Scrollbars.module.css"
+import classes from "@/Boards/Phases/Phases.module.css"
+import scrollbarClasses from "@/common/Scrollbars.module.css"
 import { useBoards, useBoardsView } from "@/state"
 import type { TaskComposer } from "@/Boards/Task/TaskComposer"
 import type { TaskMenu } from "@/Boards/Task/TaskMenu"
@@ -31,7 +31,7 @@ type DragTarget =
     }
   | { kind: "phase"; phase: number; after: boolean }
 
-export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
+export default function Phases({ aggregate, onOpen }: Phases.Props) {
   const { workspace, board, phases, tasks } = aggregate
   const state = useBoardsView()
   const boards = useBoards()
@@ -601,7 +601,7 @@ export function PhasesView({ aggregate, onOpen }: PhasesView.Props) {
   )
 }
 
-export namespace PhasesView {
+export namespace Phases {
   export type Props = {
     aggregate: BoardAggregate
     onOpen: (taskID: number) => void

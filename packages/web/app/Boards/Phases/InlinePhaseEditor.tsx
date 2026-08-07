@@ -1,5 +1,5 @@
-import { DeletePopover } from "@/Boards/Shared/DeletePopover"
-import { PresentationSelector } from "@/Boards/Presentation/PresentationSelector"
+import { DeletePopover } from "@/common/DeletePopover"
+import Appearance from "@/Boards/Appearance"
 import { Button, Group, Stack, TextInput } from "@mantine/core"
 import { useState } from "react"
 import type { BoardColor, BoardIcon, BoardPhase } from "shared/models"
@@ -27,7 +27,7 @@ export function InlinePhaseEditor({
           }
         }}
       />
-      <PresentationSelector
+      <Appearance
         color={color}
         icon={icon}
         colorRequired

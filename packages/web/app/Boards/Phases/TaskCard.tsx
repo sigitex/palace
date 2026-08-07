@@ -1,6 +1,6 @@
-import type { usePointerDrag } from "@/Boards/Drag/usePointerDrag"
-import classes from "@/Boards/Phases/PhasesView.module.css"
-import { DeletePopover } from "@/Boards/Shared/DeletePopover"
+import type { usePointerDrag } from "@/common/usePointerDrag"
+import classes from "@/Boards/Phases/Phases.module.css"
+import { DeletePopover } from "@/common/DeletePopover"
 import { TaskMenu } from "@/Boards/Task/TaskMenu"
 import {
   ActionIcon,
