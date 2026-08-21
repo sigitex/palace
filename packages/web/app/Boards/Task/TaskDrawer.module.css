@@ -1,0 +1,50 @@
+.taskNotebook {
+  min-height: calc(100dvh - 8rem);
+}
+
+.notebookTitle textarea {
+  padding: 0;
+  font-family: var(--mantine-font-family-headings);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.notebookDocument {
+  flex: 1;
+}
+
+.notebookEditor textarea {
+  padding: var(--mantine-spacing-md);
+  border-left: 3px solid var(--mantine-primary-color-light-color);
+  background: var(--mantine-color-default-hover);
+  font-family: var(--mantine-font-family-monospace);
+  line-height: 1.65;
+}
+
+.markdownDocument {
+  max-width: 48rem;
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.markdownDocument > :first-child {
+  margin-top: 0;
+}
+
+.dirtyActions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-md);
+  background: color-mix(in srgb, var(--mantine-color-body) 92%, transparent);
+  box-shadow: var(--mantine-shadow-md);
+  backdrop-filter: blur(12px);
+}
+
+.notebookDelete {
+  align-self: flex-start;
+  margin-top: auto;
+}

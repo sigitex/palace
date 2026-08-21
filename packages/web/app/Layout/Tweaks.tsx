@@ -23,7 +23,8 @@ export default function Tweaks() {
       opened={ui.isDevToolsOpen}
       onClose={() => ui.toggleDevTools()}
       position="right"
-      size="xl"
+      opacity={0.75}
+      size="50%"
       title={
         <Text fw="bold" fz={24} c="orange">
           Administration

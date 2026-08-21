@@ -1,5 +1,5 @@
 import type { operations } from "$/api/operations"
-import { routes } from "shared/routes";
+import { routes } from "shared/routes"
 
 type Calls<Operations> = {
   [Name in keyof Operations]: Operations[Name] extends {
@@ -23,11 +23,20 @@ function createProxy(ancestors: string[]): unknown {
       return createProxy([...ancestors, name])
     },
     async apply(_target, _this, args) {
-      const response = await fetch([routes.api, ...ancestors].join("/"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(args[0] ?? null),
-      })
+      let response: Response
+      try {
+        response = await fetch([routes.api, ...ancestors].join("/"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(args[0] ?? null),
+          signal: AbortSignal.timeout(5000),
+        })
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "TimeoutError") {
+          throw new Error("Request timed out.", { cause: error })
+        }
+        throw error instanceof Error ? error : new Error(String(error))
+      }
       const result: unknown = await response.json()
       if (!response.ok) {
         const message =

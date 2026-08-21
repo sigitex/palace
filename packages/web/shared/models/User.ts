@@ -1,5 +1,5 @@
 import { type } from "arktype"
-import { ID } from "shared/models/common"
+import { ID } from "./common"
 
 export type User = typeof User.infer
 export const User = type({

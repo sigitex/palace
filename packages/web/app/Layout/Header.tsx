@@ -1,28 +1,43 @@
-import { useUI } from "@/state"
-import { AppShell, Burger, Group } from "@mantine/core"
-import { Link } from "wouter"
-import logo from "assets/images/logo.full.png"
+import { HeaderContainer } from "./Header.css";
+import Auth from "@/common/Auth";
+import HeaderTab from "@/Layout/HeaderTab";
+import { routes, path } from "shared/routes";
+import { Icons } from "@/common/Icons";
 
 export default function Header() {
-  const ui = useUI()
   return (
-    <AppShell.Header>
-      <Group h="100%" px="md" justify="space-between">
-        <Group>
-          <Burger
-            opened={ui.isNavOpen}
-            onClick={() => ui.toggleNav()}
-            hiddenFrom="sm"
-            size="sm"
-          />
-          <Link to="/">
-            <img
-              src={logo}
-              style={{ width: "60px", height: "60px" }}
-            />
-          </Link>
-        </Group>
-      </Group>
-    </AppShell.Header>
+    <HeaderContainer>
+      <HeaderTab to={routes.app.home} label="Home" icon={Icons.Home} />
+      <Auth>
+        <HeaderTab
+          to={path.boards.index}
+          label="Boards"
+          icon={Icons.Boards}
+          nested
+        />
+      </Auth>
+      <Auth allow="finch">
+        <HeaderTab
+          to={routes.app.family}
+          label="Family"
+          icon={Icons.Family}
+        />
+      </Auth>
+      <Auth allow="finch">
+        <HeaderTab to="/budget" label="Budget" icon={Icons.Budget} />
+      </Auth>
+      <Auth allow="finch">
+        <HeaderTab to="/bots" label="Bots" icon={Icons.Bots} />
+      </Auth>
+      <Auth allow="finch">
+        <HeaderTab to="/photos" label="Photos" icon={Icons.Photos} />
+      </Auth>
+      <Auth allow="palace-admins">
+        <HeaderTab to="/admin" label="Admin" icon={Icons.Admin} />
+      </Auth>
+      <Auth>
+        <HeaderTab to="/me" label="Profile" icon={Icons.Profile} />
+      </Auth>
+    </HeaderContainer>
   )
 }

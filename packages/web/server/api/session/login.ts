@@ -41,11 +41,11 @@ export const login = operation(
     cookies.set(Constants.session.cookie, token, {
       sameSite: "strict",
       httpOnly: true,
-      secure: true,
+      secure: new URL(request.url).protocol === "https:",
       path: "/",
       maxAge: Constants.session.maxAge,
     })
-    const groups = username === "dan" ? ["finch", "palace-admins"] : ["finch"]
+    const groups = await users.groups(user.id)
     const userSession = {
       user,
       groups,

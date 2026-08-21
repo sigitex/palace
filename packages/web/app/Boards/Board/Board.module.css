@@ -1,0 +1,41 @@
+.boardShell {
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.boardHeader {
+  flex-wrap: wrap;
+  padding: var(--mantine-spacing-md);
+  border-left: 4px solid var(--board-color, var(--mantine-primary-color-filled));
+}
+
+.boardTabs {
+  padding-inline: var(--mantine-spacing-md);
+  background: var(--mantine-color-body);
+}
+
+.boardViews {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.listPanel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.phasesPanel {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}

@@ -1,6 +1,7 @@
 // oxlint-disable typescript/no-explicit-any typescript/no-invalid-void-type
 import {
   InvalidRequest,
+  ServerError,
   type RequestContext,
   type RequestHandler,
 } from "@sigitex/route"
@@ -33,12 +34,25 @@ export function operation<
   Output extends Type ? Output : Undefined
 > {
   const handler = async (context: RequestContext) => {
-    const raw = await context.request.json()
+    let raw: unknown
+    try {
+      raw = await context.request.json()
+    } catch {
+      throw new InvalidRequest("Invalid JSON body.")
+    }
     const valid = input ? input(raw) : raw
     if (valid instanceof type.errors) {
       throw new InvalidRequest("Invalid parameters.")
     }
-    return await execute(valid as any, context)
+    const result = await execute(valid as any, context)
+    if (output) {
+      const validOutput = output(result)
+      if (validOutput instanceof type.errors) {
+        throw new ServerError("Operation returned an invalid response.")
+      }
+      return validOutput
+    }
+    return result
   }
   handler.input = input ?? type.undefined
   handler.output = output ?? type.undefined

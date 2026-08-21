@@ -5,3 +5,5 @@ declare type PathOf<ObjectType extends object> = {
 }[keyof ObjectType & (string | number)]
 
 declare type MaybePromise<T> = T | Promise<T>
+
+declare module "@phosphor-icons/web/duotone"

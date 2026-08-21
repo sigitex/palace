@@ -1,0 +1,118 @@
+.listSearch {
+  flex: 1 1 15rem;
+  max-width: 26rem;
+}
+
+.phaseFilters {
+  flex-wrap: wrap;
+}
+
+.listView {
+  flex: 1;
+  min-height: 0;
+}
+
+.listHeader {
+  flex: 0 0 auto;
+}
+
+.taskList {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+/* Hugs the last row on short lists; pins to the bottom of the scroll area once
+   the list overflows. Opaque so scrolled rows don't show through. */
+.stickyFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--mantine-color-body);
+  box-shadow: 0 -1px 0 0 var(--mantine-color-default-border);
+}
+
+.taskRow {
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) minmax(8rem, auto)
+    auto auto;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  min-width: 0;
+  padding: 0.65rem;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  background: var(--mantine-color-body);
+}
+
+.dragHandle {
+  flex: 0 0 auto;
+  cursor: grab;
+  touch-action: none;
+  background: var(--mantine-color-default-hover);
+  color: var(--mantine-color-dimmed);
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragSourceActive {
+  opacity: 0.4;
+}
+
+.dropTargetBefore {
+  box-shadow: inset 0 3px 0 var(--mantine-primary-color-filled);
+}
+
+.dropTargetAfter {
+  box-shadow: inset 0 -3px 0 var(--mantine-primary-color-filled);
+}
+
+.taskRow:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: -2px;
+}
+
+.taskSelected {
+  background: var(--task-background, var(--mantine-primary-color-light));
+}
+
+.taskComplete {
+  color: var(--mantine-color-dimmed);
+}
+
+.taskTitle {
+  min-width: 0;
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 47.99em) {
+  .taskRow {
+    display: flex;
+    align-items: center;
+    gap: var(--mantine-spacing-sm);
+    min-width: 0;
+  }
+
+  .taskRow > :nth-child(3),
+  .taskRow > :nth-child(4) {
+    display: none;
+  }
+
+  .taskRow > :nth-child(2) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .taskTitle {
+    min-width: 0;
+    overflow-wrap: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100%;
+  }
+}
