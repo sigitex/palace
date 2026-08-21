@@ -24,6 +24,7 @@ Keyboard and pointer ergonomics for lists and items.
   not pointer.
 - Apply `user-select: none` broadly — dragging (or attempting to) currently creates
   unwanted text selections.
+- Middle-drag-to-scroll in both modes.
 
 ### `boards-per-board-view-state`
 
@@ -33,6 +34,7 @@ Persist per-board view settings (interim, localStorage-based; superseded later b
 - Audit current `sessionStorage` usage — clarify what is stored and why, migrate as needed.
 - Phase filter setting persisted per-board.
 - Phases mode: show/hide incomplete/complete persisted per-board.
+- Mode setting (which tab I'm on) persisted per-board in localStorage.
 
 ### `boards-list-phase-behavior`
 
