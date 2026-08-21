@@ -4,11 +4,6 @@ import type { User } from "shared/models"
 import { proxy } from "valtio"
 import { useProxy } from "valtio/utils"
 
-export type SessionData = {
-  user: User
-  groups: string[]
-}
-
 const session = proxy({
   data: initData(),
   get loggedIn() {
@@ -37,13 +32,13 @@ const session = proxy({
 
 export const useSession = () => useProxy(session)
 
-function initData(): SessionData | null {
+function initData(): { user: User; groups: string[] } | null {
   try {
     const json = localStorage.getItem(Constants.session.storage)
     if (!json) {
       return null
     }
-    return JSON.parse(json) as SessionData
+    return JSON.parse(json)
   } catch {
     return null
   }

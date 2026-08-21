@@ -1,60 +1,26 @@
 import { proxy } from "valtio"
 import { useProxy } from "valtio/utils"
 
-export type BoardMode = "list" | "phases"
-
-export type ListProjection =
-  | "all"
-  | "incomplete"
-  | "complete"
-  | `phase:${number}`
-
-export type BoardsView = {
-  boardID: number | null
-  mode: BoardMode
-  selectedTask: number | null
-  selectedNewTask: string | null
-  pendingTaskIds: number[]
-  listSearch: string
-  listProjection: ListProjection
-  taskComposerVisible: boolean
-  taskComposerPhase: number | null
-  phaseComposerVisible: boolean
-  incompleteLaneVisible: boolean
-  completeLaneVisible: boolean
-  activePhaseEditor: number | null
-  setBoard: (boardID: number | null, selectedTask?: number | null) => void
-  setMode: (mode: BoardMode) => void
-  selectTask: (taskID: number | null) => void
-  selectNewTask: (id: string | null) => void
-  addPendingTask: (taskID: number) => void
-  clearPendingTask: (taskID: number) => void
-  setListSearch: (search: string) => void
-  setListProjection: (projection: ListProjection) => void
-  openTaskComposer: (phase?: number | null) => void
-  closeTaskComposer: () => void
-  setPhaseComposerVisible: (visible: boolean) => void
-  toggleIncompleteLane: () => void
-  toggleCompleteLane: () => void
-  setActivePhaseEditor: (phaseID: number | null) => void
-}
-
-export const boardsView = proxy<BoardsView>({
-  boardID: null,
-  mode: "list",
-  selectedTask: null,
-  selectedNewTask: null,
-  pendingTaskIds: [],
+export const boardsView = proxy({
+  boardID: null as number | null,
+  mode: "list" as "list" | "phases",
+  selectedTask: null as number | null,
+  selectedNewTask: null as string | null,
+  pendingTaskIds: [] as number[],
   listSearch: "",
-  listProjection: "all",
+  listProjection: "all" as
+    | "all"
+    | "incomplete"
+    | "complete"
+    | `phase:${number}`,
   taskComposerVisible: false,
-  taskComposerPhase: null,
+  taskComposerPhase: null as number | null,
   phaseComposerVisible: false,
   incompleteLaneVisible: true,
   completeLaneVisible: false,
-  activePhaseEditor: null,
+  activePhaseEditor: null as number | null,
 
-  setBoard(boardID, selectedTask = null) {
+  setBoard(boardID: number | null, selectedTask: number | null = null) {
     if (boardsView.boardID === boardID) return
     boardsView.boardID = boardID
     boardsView.mode = "list"
@@ -62,43 +28,45 @@ export const boardsView = proxy<BoardsView>({
     resetPanels()
   },
 
-  setMode(mode) {
+  setMode(mode: "list" | "phases") {
     if (boardsView.mode === mode) return
     boardsView.mode = mode
     resetPanels()
   },
 
-  selectTask(taskID) {
+  selectTask(taskID: number | null) {
     boardsView.selectedTask = taskID
     boardsView.selectedNewTask = null
   },
 
-  selectNewTask(id) {
+  selectNewTask(id: string | null) {
     boardsView.selectedNewTask = id
     boardsView.selectedTask = null
   },
 
-  addPendingTask(taskID) {
+  addPendingTask(taskID: number) {
     if (!boardsView.pendingTaskIds.includes(taskID)) {
       boardsView.pendingTaskIds = [...boardsView.pendingTaskIds, taskID]
     }
   },
 
-  clearPendingTask(taskID) {
+  clearPendingTask(taskID: number) {
     boardsView.pendingTaskIds = boardsView.pendingTaskIds.filter(
       (id) => id !== taskID,
     )
   },
 
-  setListSearch(search) {
+  setListSearch(search: string) {
     boardsView.listSearch = search
   },
 
-  setListProjection(projection) {
+  setListProjection(
+    projection: "all" | "incomplete" | "complete" | `phase:${number}`,
+  ) {
     boardsView.listProjection = projection
   },
 
-  openTaskComposer(phase = null) {
+  openTaskComposer(phase: number | null = null) {
     boardsView.taskComposerVisible = true
     boardsView.taskComposerPhase = phase
     if (boardsView.mode === "phases" && phase === null) {
@@ -111,7 +79,7 @@ export const boardsView = proxy<BoardsView>({
     boardsView.taskComposerPhase = null
   },
 
-  setPhaseComposerVisible(visible) {
+  setPhaseComposerVisible(visible: boolean) {
     boardsView.phaseComposerVisible = visible
   },
 
@@ -123,7 +91,7 @@ export const boardsView = proxy<BoardsView>({
     boardsView.completeLaneVisible = !boardsView.completeLaneVisible
   },
 
-  setActivePhaseEditor(phaseID) {
+  setActivePhaseEditor(phaseID: number | null) {
     boardsView.activePhaseEditor = phaseID
   },
 })

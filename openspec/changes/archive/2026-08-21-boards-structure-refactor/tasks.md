@@ -38,7 +38,7 @@
 
 - [x] 5.1 `bun run` typecheck / build passes.
 - [x] 5.2 Existing tests pass.
-- [ ] 5.3 Manual smoke: navigate index → workspace → board → task; List and Phases views render; drawers open. No behavior change.
+- [x] 5.3 Manual smoke: navigate index → workspace → board → task; List and Phases views render; drawers open. No behavior change.
 
 # Step 2 — Extractions (separate presentation / composition / behavior)
 
@@ -80,4 +80,4 @@
 - [x] 11.1 No file contains `oxlint-disable eslint/complexity`.
 - [x] 11.2 Lint / typecheck / build pass with the suppressions removed.
 - [x] 11.3 Existing tests pass.
-- [ ] 11.4 Manual smoke across List and Phases: keyboard nav (arrows, Enter, F2, Delete, Ctrl+arrows), drag-and-drop, task/phase create, drawers. No behavior change.
+- [x] 11.4 Manual smoke across List and Phases: keyboard nav (arrows, Enter, F2, Delete, Ctrl+arrows), drag-and-drop, task/phase create, drawers. No behavior change.

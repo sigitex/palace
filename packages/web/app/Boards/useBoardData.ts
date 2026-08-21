@@ -1,18 +1,6 @@
-import { useBoards } from "@/state"
-import { useEffect } from "react"
-import type { Board, BoardAggregate, Workspace } from "shared/models"
-
-export type BoardData =
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "workspace-not-found" }
-  | { status: "invalid-task" }
-  | {
-      status: "ready"
-      board: BoardAggregate | null
-      workspaces: Workspace[]
-      boardList: Board[]
-    }
+import { useBoards } from "@/state";
+import { useEffect } from "react";
+import type { Workspace } from "shared/models";
 
 // Loads the workspace list, the selected workspace's boards, and the selected
 // board's aggregate as the route params change, then reduces the combined
@@ -21,7 +9,7 @@ export function useBoardData(
   workspace?: string,
   board?: string,
   task?: number,
-): BoardData {
+) {
   const boards = useBoards()
   const { workspaces, boards: boardList, aggregate } = boards
 

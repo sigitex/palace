@@ -8,7 +8,6 @@ import type {
   BoardAggregate,
   BoardColor,
   BoardIcon,
-  BoardPhase,
   BoardTask,
   IdentityGroup,
   Workspace,
@@ -16,127 +15,23 @@ import type {
   WorkspaceAccessLevel,
 } from "shared/models"
 
-type TaskPatch = Partial<
-  Pick<BoardTask, "title" | "details" | "complete" | "phase">
->
-type BoardPresentation = Pick<Board, "name" | "slug" | "color" | "icon">
-type WorkspacePresentation = Pick<Workspace, "name" | "slug" | "color" | "icon">
-type PhaseInput = { title: string; color: BoardColor; icon: BoardIcon | null }
-
-type Boards = {
-  workspaces: Async<Workspace[]>
-  boards: Async<Board[]>
-  aggregate: Async<BoardAggregate>
-  access: Async<WorkspaceAccess[]>
-  groups: Async<IdentityGroup[]>
-  pendingMove: number | null
-  creatingTask: boolean
-  creatingPhase: boolean
-  loadWorkspaces: () => Promise<Workspace[] | null>
-  loadBoards: (workspace: string) => Promise<Board[] | null>
-  loadAggregate: (
-    workspace: string,
-    board: string,
-  ) => Promise<BoardAggregate | null>
-  clearAggregate: () => void
-  loadAccess: (workspace: string) => Promise<WorkspaceAccess[] | null>
-  loadGroups: (workspace: string) => Promise<IdentityGroup[] | null>
-  createTask: (
-    workspace: string,
-    board: string,
-    input: { title: string; phase: number | null },
-  ) => Promise<BoardTask>
-  updateTask: (
-    workspace: string,
-    board: string,
-    task: number,
-    patch: TaskPatch,
-  ) => Promise<void>
-  completeTask: (
-    workspace: string,
-    board: string,
-    task: number,
-  ) => Promise<void>
-  deleteTask: (workspace: string, board: string, task: number) => Promise<void>
-  moveTask: (move: TaskMove) => Promise<void>
-  stepTask: (
-    workspace: string,
-    board: string,
-    task: number,
-    direction: -1 | 1,
-  ) => void
-  createPhase: (
-    workspace: string,
-    board: string,
-    input: PhaseInput,
-  ) => Promise<BoardPhase>
-  updatePhase: (
-    workspace: string,
-    board: string,
-    phase: number,
-    patch: PhaseInput,
-  ) => Promise<void>
-  deletePhase: (
-    workspace: string,
-    board: string,
-    phase: number,
-  ) => Promise<void>
-  movePhaseTo: (
-    workspace: string,
-    board: string,
-    source: number,
-    target: number,
-    after: boolean,
-  ) => Promise<void>
-  movePhaseStep: (
-    workspace: string,
-    board: string,
-    phase: number,
-    direction: -1 | 1,
-  ) => Promise<void>
-  createBoard: (workspace: string, input: BoardPresentation) => Promise<Board>
-  updateBoard: (
-    workspace: string,
-    board: string,
-    patch: BoardPresentation,
-  ) => Promise<void>
-  deleteBoard: (workspace: string, board: string) => Promise<void>
-  createWorkspace: (input: {
-    name: string
-    slug: string
-    color: BoardColor | null
-    icon: BoardIcon | null
-    manager_group: number
-  }) => Promise<void>
-  updateWorkspace: (
-    workspace: string,
-    patch: WorkspacePresentation,
-  ) => Promise<void>
-  deleteWorkspace: (workspace: string) => Promise<void>
-  setAccess: (
-    workspace: string,
-    grant: { group: number; level: WorkspaceAccessLevel },
-  ) => Promise<void>
-  removeAccess: (workspace: string, group: number) => Promise<void>
-}
-
-const boards: Boards = proxy({
+const boards = proxy({
   workspaces: Async.create<Workspace[]>(),
   boards: Async.create<Board[]>(),
   aggregate: Async.create<BoardAggregate>(),
   access: Async.create<WorkspaceAccess[]>(),
   groups: Async.create<IdentityGroup[]>(),
-  pendingMove: null,
+  pendingMove: null as number | null,
   creatingTask: false,
   creatingPhase: false,
 
   loadWorkspaces() {
     return Async.run(boards.workspaces, () => call.boards.workspace.list(null))
   },
-  loadBoards(workspace) {
+  loadBoards(workspace: string) {
     return Async.run(boards.boards, () => call.boards.board.list({ workspace }))
   },
-  loadAggregate(workspace, board) {
+  loadAggregate(workspace: string, board: string) {
     const current = boards.aggregate.data
     const switching =
       current?.board.slug !== board || current.workspace.slug !== workspace
@@ -165,18 +60,22 @@ const boards: Boards = proxy({
     boards.aggregate.data = null
     boards.aggregate.error = null
   },
-  loadAccess(workspace) {
+  loadAccess(workspace: string) {
     return Async.run(boards.access, () =>
       call.boards.workspace.access.list({ workspace }),
     )
   },
-  loadGroups(workspace) {
+  loadGroups(workspace: string) {
     return Async.run(boards.groups, () =>
       call.boards.workspace.groups({ workspace }),
     )
   },
 
-  async createTask(workspace, board, input) {
+  async createTask(
+    workspace: string,
+    board: string,
+    input: { title: string; phase: number | null },
+  ) {
     boards.creatingTask = true
     try {
       const task = await call.boards.task.create({
@@ -190,7 +89,12 @@ const boards: Boards = proxy({
       boards.creatingTask = false
     }
   },
-  async updateTask(workspace, board, task, patch) {
+  async updateTask(
+    workspace: string,
+    board: string,
+    task: number,
+    patch: Partial<Pick<BoardTask, "title" | "details" | "complete" | "phase">>,
+  ) {
     patchTask(task, patch) // optimistic; the server mirrors this exact change
     try {
       await call.boards.task.update({ workspace, board, task, ...patch })
@@ -199,14 +103,14 @@ const boards: Boards = proxy({
       throw error
     }
   },
-  completeTask(workspace, board, task) {
+  completeTask(workspace: string, board: string, task: number) {
     return boards.updateTask(workspace, board, task, { complete: true })
   },
-  async deleteTask(workspace, board, task) {
+  async deleteTask(workspace: string, board: string, task: number) {
     await call.boards.task.delete({ workspace, board, task })
     await boards.loadAggregate(workspace, board)
   },
-  moveTask(move) {
+  moveTask(move: TaskMove) {
     // Optimistic and authoritative: TaskMovement.apply mirrors the server's
     // reordering, so we keep the optimistic result rather than overwriting with
     // the server response. Overwriting let rapid, concurrent moves clobber each
@@ -227,7 +131,7 @@ const boards: Boards = proxy({
         boards.pendingMove = null
       })
   },
-  stepTask(workspace, board, task, direction) {
+  stepTask(workspace: string, board: string, task: number, direction: -1 | 1) {
     // Reads the live task order (a store method runs against the module proxy,
     // not a captured useProxy snapshot) so repeated keyboard nudges keep working.
     const list = boards.aggregate.data?.tasks ?? []
@@ -248,7 +152,11 @@ const boards: Boards = proxy({
     })
   },
 
-  async createPhase(workspace, board, input) {
+  async createPhase(
+    workspace: string,
+    board: string,
+    input: { title: string; color: BoardColor; icon: BoardIcon | null },
+  ) {
     boards.creatingPhase = true
     try {
       const phase = await call.boards.phase.create({
@@ -262,15 +170,26 @@ const boards: Boards = proxy({
       boards.creatingPhase = false
     }
   },
-  async updatePhase(workspace, board, phase, patch) {
+  async updatePhase(
+    workspace: string,
+    board: string,
+    phase: number,
+    patch: { title: string; color: BoardColor; icon: BoardIcon | null },
+  ) {
     await call.boards.phase.update({ workspace, board, phase, ...patch })
     await boards.loadAggregate(workspace, board)
   },
-  async deletePhase(workspace, board, phase) {
+  async deletePhase(workspace: string, board: string, phase: number) {
     await call.boards.phase.delete({ workspace, board, phase })
     await boards.loadAggregate(workspace, board)
   },
-  async movePhaseTo(workspace, board, source, target, after) {
+  async movePhaseTo(
+    workspace: string,
+    board: string,
+    source: number,
+    target: number,
+    after: boolean,
+  ) {
     if (source === target) return
     const list = boards.aggregate.data?.phases ?? []
     const moving = list.find(({ id }) => id === source)
@@ -289,7 +208,12 @@ const boards: Boards = proxy({
     })
     await boards.loadAggregate(workspace, board)
   },
-  async movePhaseStep(workspace, board, phase, direction) {
+  async movePhaseStep(
+    workspace: string,
+    board: string,
+    phase: number,
+    direction: -1 | 1,
+  ) {
     const list = boards.aggregate.data?.phases ?? []
     const index = list.findIndex(({ id }) => id === phase)
     const target = list[index + direction]
@@ -304,12 +228,19 @@ const boards: Boards = proxy({
     }
   },
 
-  async createBoard(workspace, input) {
+  async createBoard(
+    workspace: string,
+    input: Pick<Board, "name" | "slug" | "color" | "icon">,
+  ) {
     const board = await call.boards.board.create({ workspace, ...input })
     await boards.loadBoards(workspace)
     return board
   },
-  async updateBoard(workspace, board, patch) {
+  async updateBoard(
+    workspace: string,
+    board: string,
+    patch: Pick<Board, "name" | "slug" | "color" | "icon">,
+  ) {
     await call.boards.board.update({ workspace, board, ...patch })
     await Promise.all([
       boards.loadBoards(workspace),
@@ -318,7 +249,7 @@ const boards: Boards = proxy({
         : null,
     ])
   },
-  async deleteBoard(workspace, board) {
+  async deleteBoard(workspace: string, board: string) {
     await call.boards.board.delete({ workspace, board })
     if (boards.aggregate.data?.board.slug === board) {
       boards.clearAggregate()
@@ -326,11 +257,20 @@ const boards: Boards = proxy({
     await boards.loadBoards(workspace)
   },
 
-  async createWorkspace(input) {
+  async createWorkspace(input: {
+    name: string
+    slug: string
+    color: BoardColor | null
+    icon: BoardIcon | null
+    manager_group: number
+  }) {
     await call.boards.workspace.create(input)
     await boards.loadWorkspaces()
   },
-  async updateWorkspace(workspace, patch) {
+  async updateWorkspace(
+    workspace: string,
+    patch: Pick<Workspace, "name" | "slug" | "color" | "icon">,
+  ) {
     await call.boards.workspace.update({ workspace, ...patch })
     await Promise.all([
       boards.loadWorkspaces(),
@@ -342,18 +282,21 @@ const boards: Boards = proxy({
         : null,
     ])
   },
-  async deleteWorkspace(workspace) {
+  async deleteWorkspace(workspace: string) {
     await call.boards.workspace.delete({ workspace })
     if (boards.aggregate.data?.workspace.slug === workspace) {
       boards.clearAggregate()
     }
     await boards.loadWorkspaces()
   },
-  async setAccess(workspace, grant) {
+  async setAccess(
+    workspace: string,
+    grant: { group: number; level: WorkspaceAccessLevel },
+  ) {
     await call.boards.workspace.access.set({ workspace, ...grant })
     await afterAccessChange(workspace)
   },
-  async removeAccess(workspace, group) {
+  async removeAccess(workspace: string, group: number) {
     await call.boards.workspace.access.remove({ workspace, group })
     await afterAccessChange(workspace)
   },
@@ -361,7 +304,10 @@ const boards: Boards = proxy({
 
 export const useBoards = () => useProxy(boards)
 
-function patchTask(taskID: number, patch: TaskPatch) {
+function patchTask(
+  taskID: number,
+  patch: Partial<Pick<BoardTask, "title" | "details" | "complete" | "phase">>,
+) {
   const task = boards.aggregate.data?.tasks.find(({ id }) => id === taskID)
   if (task) {
     Object.assign(task, patch)
