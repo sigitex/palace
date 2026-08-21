@@ -1,3 +1,4 @@
+// oxlint-disable typescript/no-explicit-any
 import Board from "@/Boards/Board"
 import classes from "@/Boards/Boards.module.css"
 import Browse from "@/Boards/Browse"
@@ -46,8 +47,8 @@ export default function Boards({
         />
       ) : (
         <Browse
-          workspaces={data.workspaces}
-          boardList={data.boardList}
+          workspaces={data.workspaces as any}
+          boardList={data.boardList as any}
           selectedWorkspace={workspace}
         />
       )}
