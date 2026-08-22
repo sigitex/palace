@@ -1,9 +1,25 @@
+# Dependencies
 node_modules
-*.tsbuildinfo
+
+# Output
 dist
-.opencode
 packages/*/lib
+
+# Database
 *.sqlite
+
+# Tool output
+*.tsbuildinfo
 playwright-report
 test-results
+
+# Project management
 .internal
+.agents
+.opencode
+openspec
+opencode.json
+AGENTS.md
+CONTEXT.md
+ROADMAP.md
+docs/adr
