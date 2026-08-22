@@ -1,7 +1,11 @@
 {
 	"folders": [
 		{
-			"name": "palace",
+			"name": "project",
+			"path": "../palace.project",
+		},
+		{
+			"name": "repo",
 			"path": ".",
 		},
 	],
