@@ -1,4 +1,4 @@
-import { BoardsOperation } from "$/api/boards/BoardsOperation"
+import type { Actor } from "$/authorization/Actor"
 import { operation } from "$/framework/operation"
 import type { Workspaces } from "$/services/Workspaces"
 import { WorkspaceAccess } from "shared/models"
@@ -6,17 +6,15 @@ import { type } from "arktype"
 
 export const accessList = operation(
   {
+    loggedIn: true,
     input: type({ workspace: "string > 0" }),
     output: WorkspaceAccess.array(),
   },
   async ({ workspace }, context: Context) =>
-    BoardsOperation.run(context, (actor) =>
-      context.workspaces.listAccess(actor, workspace),
-    ),
+    context.workspaces.listAccess(context.actor, workspace),
 )
 
 type Context = {
-  user?: { id: number } | null
-  groups?: readonly string[] | null
+  actor: Actor
   workspaces: Workspaces
 }

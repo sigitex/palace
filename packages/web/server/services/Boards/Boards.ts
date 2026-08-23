@@ -1,7 +1,7 @@
 import type { DatabaseConnection, DB } from "$/database"
 import type { BoardPhaseRow, BoardRow, BoardTaskRow } from "$/database/boards"
 import type { Actor } from "$/authorization/Actor"
-import { BoardsError } from "$/errors/BoardsError"
+import { DomainError } from "$/errors/DomainError"
 import type { MoveAnchors } from "$/services/Boards/MoveAnchors"
 import type { TaskDestination } from "$/services/Boards/TaskDestination"
 import type { Workspaces } from "$/services/Workspaces"
@@ -426,13 +426,13 @@ function validateBoardMetadata(
   metadata: Pick<Board, "name" | "slug" | "color" | "icon">,
 ) {
   if (!metadata.name.trim() || !metadata.slug.trim()) {
-    throw new BoardsError("invalid", "Board name and slug are required.")
+    throw new DomainError("invalid", "Board name and slug are required.")
   }
   if (metadata.color && !BOARD_COLORS.includes(metadata.color)) {
-    throw new BoardsError("invalid", "Unsupported Board color.")
+    throw new DomainError("invalid", "Unsupported Board color.")
   }
   if (metadata.icon && !BOARD_ICONS.includes(metadata.icon)) {
-    throw new BoardsError("invalid", "Unsupported Board icon.")
+    throw new DomainError("invalid", "Unsupported Board icon.")
   }
 }
 
@@ -440,19 +440,19 @@ function validatePhaseMetadata(
   metadata: Pick<BoardPhase, "title" | "color" | "icon">,
 ) {
   if (!metadata.title.trim()) {
-    throw new BoardsError("invalid", "Phase title is required.")
+    throw new DomainError("invalid", "Phase title is required.")
   }
   if (!BOARD_COLORS.includes(metadata.color)) {
-    throw new BoardsError("invalid", "Unsupported Phase color.")
+    throw new DomainError("invalid", "Unsupported Phase color.")
   }
   if (metadata.icon !== null && !BOARD_ICONS.includes(metadata.icon)) {
-    throw new BoardsError("invalid", "Unsupported Phase icon.")
+    throw new DomainError("invalid", "Unsupported Phase icon.")
   }
 }
 
 function validateTaskTitle(title: string) {
   if (!title.trim()) {
-    throw new BoardsError("invalid", "Task title is required.")
+    throw new DomainError("invalid", "Task title is required.")
   }
 }
 
@@ -467,7 +467,7 @@ async function requireBoardRow(
     .limit(1)
     .fetch()
   if (!workspace) {
-    throw new BoardsError("not-found", "Board was not found.")
+    throw new DomainError("not-found", "Board was not found.")
   }
   const [board] = await db.board
     .select("*")
@@ -476,7 +476,7 @@ async function requireBoardRow(
     .limit(1)
     .fetch()
   if (!board) {
-    throw new BoardsError("not-found", "Board was not found.")
+    throw new DomainError("not-found", "Board was not found.")
   }
   return board
 }
@@ -493,7 +493,7 @@ async function requireUnusedBoardSlug(
     .limit(1)
     .fetch()
   if (rows.length > 0) {
-    throw new BoardsError("conflict", `Board slug '${slug}' is already in use.`)
+    throw new DomainError("conflict", `Board slug '${slug}' is already in use.`)
   }
 }
 
@@ -509,7 +509,7 @@ async function requirePhaseRow(
     .limit(1)
     .fetch()
   if (!phase) {
-    throw new BoardsError("not-found", "Phase was not found in this Board.")
+    throw new DomainError("not-found", "Phase was not found in this Board.")
   }
   return phase
 }
@@ -526,7 +526,7 @@ async function requireTaskRow(
     .limit(1)
     .fetch()
   if (!task) {
-    throw new BoardsError("not-found", "Task was not found in this Board.")
+    throw new DomainError("not-found", "Task was not found in this Board.")
   }
   return task
 }
@@ -567,7 +567,7 @@ async function requireCreator(db: DatabaseConnection, userID: number) {
     .limit(1)
     .fetch()
   if (!creator) {
-    throw new BoardsError("not-found", "Creator was not found.")
+    throw new DomainError("not-found", "Creator was not found.")
   }
   return creator
 }
@@ -579,10 +579,10 @@ function reorderRows<Row extends { id: number }>(
 ) {
   const moved = rows.find((row) => row.id === movedID)
   if (!moved) {
-    throw new BoardsError("not-found", "Ordered resource was not found.")
+    throw new DomainError("not-found", "Ordered resource was not found.")
   }
   if (anchors.before === movedID || anchors.after === movedID) {
-    throw new BoardsError(
+    throw new DomainError(
       "invalid",
       "A resource cannot be its own movement anchor.",
     )
@@ -591,7 +591,7 @@ function reorderRows<Row extends { id: number }>(
   const before = anchorIndex(remaining, anchors.before)
   const after = anchorIndex(remaining, anchors.after)
   if (before !== null && after !== null && after >= before) {
-    throw new BoardsError("conflict", "Movement anchors are no longer ordered.")
+    throw new DomainError("conflict", "Movement anchors are no longer ordered.")
   }
   const index = before ?? (after === null ? remaining.length : after + 1)
   remaining.splice(index, 0, moved)
@@ -607,7 +607,7 @@ function anchorIndex<Row extends { id: number }>(
   }
   const index = rows.findIndex((row) => row.id === anchor)
   if (index < 0) {
-    throw new BoardsError("conflict", "Movement anchor is stale or invalid.")
+    throw new DomainError("conflict", "Movement anchor is stale or invalid.")
   }
   return index
 }
@@ -623,7 +623,7 @@ async function moveTaskRows(
   const rows = await taskRows(db, boardID)
   const task = rows.find((row) => row.id === taskID)
   if (!task) {
-    throw new BoardsError("not-found", "Task was not found in this Board.")
+    throw new DomainError("not-found", "Task was not found in this Board.")
   }
   const phase =
     destination.type === "phase"
@@ -642,7 +642,7 @@ async function moveTaskRows(
   const before = anchorIndex(remaining, anchors.before)
   const after = anchorIndex(remaining, anchors.after)
   if (before !== null && after !== null && after >= before) {
-    throw new BoardsError("conflict", "Movement anchors are no longer ordered.")
+    throw new DomainError("conflict", "Movement anchors are no longer ordered.")
   }
   let index = before ?? (after === null ? -1 : after + 1)
   if (index < 0) {
@@ -678,7 +678,7 @@ function validateTaskAnchors(
     }
     const row = rows.find((task) => task.id === anchor)
     if (!row || !destinationContains(destination, row)) {
-      throw new BoardsError(
+      throw new DomainError(
         "conflict",
         "Movement anchor is outside the destination.",
       )

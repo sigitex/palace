@@ -2,7 +2,7 @@ import type { DatabaseConnection, DB } from "$/database"
 import type { WorkspaceAccessRow, WorkspaceRow } from "$/database/boards"
 import type { GroupRow } from "$/database/identity"
 import { Actor } from "$/authorization/Actor"
-import { BoardsError } from "$/errors/BoardsError"
+import { DomainError } from "$/errors/DomainError"
 import {
   BOARD_COLORS,
   BOARD_ICONS,
@@ -110,7 +110,7 @@ export class Workspaces {
         .limit(1)
         .fetch()
       if (boards.length > 0) {
-        throw new BoardsError(
+        throw new DomainError(
           "not-empty",
           "Workspace contains Boards. Delete them before deleting the Workspace.",
         )
@@ -201,7 +201,7 @@ export class Workspaces {
         .limit(1)
         .fetch()
       if (!existing) {
-        throw new BoardsError("not-found", "Workspace Access was not found.")
+        throw new DomainError("not-found", "Workspace Access was not found.")
       }
       if (existing.level === "manage") {
         await requireAnotherManager(db, row.id, groupID)
@@ -225,10 +225,10 @@ export class Workspaces {
     const row = await requireWorkspaceRow(connection, slug, true)
     const access = await workspaceAccess(actor, row.id, connection)
     if (!access) {
-      throw new BoardsError("not-found", "Workspace was not found.")
+      throw new DomainError("not-found", "Workspace was not found.")
     }
     if (accessRank(access) < accessRank(minimum)) {
-      throw new BoardsError(
+      throw new DomainError(
         "forbidden",
         `Workspace ${minimum} access is required.`,
       )
@@ -279,7 +279,7 @@ async function presentWorkspace(
     .limit(1)
     .fetch()
   if (!creator) {
-    throw new BoardsError("not-found", "Workspace Creator was not found.")
+    throw new DomainError("not-found", "Workspace Creator was not found.")
   }
   return {
     id: row.id,
@@ -312,7 +312,7 @@ async function presentAccess(
 
 function requirePalaceAdmin(actor: Actor) {
   if (!Actor.isPalaceAdmin(actor)) {
-    throw new BoardsError(
+    throw new DomainError(
       "forbidden",
       "Palace Administrator access is required.",
     )
@@ -323,13 +323,13 @@ function validateMetadata(
   metadata: Pick<Workspace, "name" | "slug" | "color" | "icon">,
 ) {
   if (!metadata.name.trim() || !metadata.slug.trim()) {
-    throw new BoardsError("invalid", "Workspace name and slug are required.")
+    throw new DomainError("invalid", "Workspace name and slug are required.")
   }
   if (metadata.color && !BOARD_COLORS.includes(metadata.color)) {
-    throw new BoardsError("invalid", "Unsupported Workspace color.")
+    throw new DomainError("invalid", "Unsupported Workspace color.")
   }
   if (metadata.icon && !BOARD_ICONS.includes(metadata.icon)) {
-    throw new BoardsError("invalid", "Unsupported Workspace icon.")
+    throw new DomainError("invalid", "Unsupported Workspace icon.")
   }
 }
 
@@ -344,7 +344,7 @@ async function requireWorkspaceRow(
     .limit(1)
     .fetch()
   if (!row) {
-    throw new BoardsError(
+    throw new DomainError(
       "not-found",
       hideInaccessible
         ? "Workspace was not found."
@@ -361,7 +361,7 @@ async function requireUnusedSlug(db: DatabaseConnection, slug: string) {
     .limit(1)
     .fetch()
   if (rows.length > 0) {
-    throw new BoardsError(
+    throw new DomainError(
       "conflict",
       `Workspace slug '${slug}' is already in use.`,
     )
@@ -378,7 +378,7 @@ async function requireGroup(
     .limit(1)
     .fetch()
   if (!identityGroup) {
-    throw new BoardsError("not-found", "Identity group was not found.")
+    throw new DomainError("not-found", "Identity group was not found.")
   }
   return identityGroup
 }
@@ -394,7 +394,7 @@ async function requireAnotherManager(
     .where("level", "=", "manage")
     .fetch()
   if (!managers.some(({ group }) => group !== excludedGroup)) {
-    throw new BoardsError(
+    throw new DomainError(
       "conflict",
       "Workspace must retain at least one Manager group.",
     )

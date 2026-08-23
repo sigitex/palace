@@ -13,7 +13,7 @@ export function session(): RouteMiddleware {
       db,
       users,
     }: RequestContext & { cookies: Cookies; db: DB; users: Users }) {
-      bind({ user: null, groups: null })
+      bind({ user: null, actor: null })
       const token = cookies.get(Constants.session.cookie)
       if (!token) {
         return
@@ -33,7 +33,7 @@ export function session(): RouteMiddleware {
         return
       }
       const groups = await users.groups(user.id)
-      bind({ user, groups })
+      bind({ user, actor: { user: user.id, groups } })
     },
   }
 }

@@ -50,7 +50,7 @@ export const login = operation(
       user,
       groups,
     }
-    bind(userSession)
+    bind({ user, actor: { user: user.id, groups } })
     return userSession
   },
 )

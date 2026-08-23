@@ -65,6 +65,34 @@ describe("Boards API", () => {
     ).rejects.toMatchObject({ status: 404 })
   })
 
+  test("maps domain failures to route errors", async () => {
+    await expect(
+      invoke(
+        boards.workspace.create,
+        { ...metadata(" ", "home"), manager_group: 1 },
+        admin,
+      ),
+    ).rejects.toMatchObject({ status: 400 })
+
+    const member = await context.actor("lara")
+    await expect(
+      invoke(
+        boards.workspace.create,
+        { ...metadata("Home", "home"), manager_group: 1 },
+        member,
+      ),
+    ).rejects.toMatchObject({ status: 403 })
+
+    await context.workspaces.create(admin, metadata("Home", "home"), 1)
+    await expect(
+      invoke(
+        boards.workspace.create,
+        { ...metadata("Another Home", "home"), manager_group: 1 },
+        admin,
+      ),
+    ).rejects.toMatchObject({ status: 409 })
+  })
+
   test("returns typed mutation data with ISO timestamps", async () => {
     const workspace = await invoke(
       boards.workspace.create,
@@ -130,8 +158,7 @@ async function invokeRaw<Output>(
     }),
     boards: context.boards,
     workspaces: context.workspaces,
-    user: actor ? { id: actor.user } : undefined,
-    groups: actor?.groups,
+    actor,
   } as never) as Promise<Output>
 }
 

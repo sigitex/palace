@@ -1,7 +1,12 @@
 // oxlint-disable typescript/no-explicit-any typescript/no-invalid-void-type
+import type { Actor } from "$/authorization/Actor"
+import { DomainError } from "$/errors/DomainError"
 import {
   InvalidRequest,
+  NotFound,
+  RouterError,
   ServerError,
+  Unauthorized,
   type RequestContext,
   type RequestHandler,
 } from "@sigitex/route"
@@ -13,17 +18,20 @@ export type Operations = {
   [key: string]: OperationHandler<Type, Type> | Operations
 }
 
+export type OperationParams<
+  Input extends Type | undefined,
+  Output extends Type | undefined,
+> = {
+  input?: Input
+  loggedIn?: true
+  output?: Output
+}
+
 export function operation<
   Input extends Type | undefined,
   Output extends Type | undefined,
 >(
-  {
-    input,
-    output,
-  }: {
-    input?: Input
-    output?: Output
-  },
+  { input, loggedIn, output }: OperationParams<Input, Output>,
 
   execute: (
     input: Input extends Type ? Input["infer"] : any,
@@ -33,7 +41,9 @@ export function operation<
   Input extends Type ? Input : Undefined,
   Output extends Type ? Output : Undefined
 > {
-  const handler = async (context: RequestContext) => {
+  const handler = async (
+    context: RequestContext & { actor?: Actor | null },
+  ) => {
     let raw: unknown
     try {
       raw = await context.request.json()
@@ -44,7 +54,15 @@ export function operation<
     if (valid instanceof type.errors) {
       throw new InvalidRequest("Invalid parameters.")
     }
-    const result = await execute(valid as any, context)
+    if (loggedIn && !context.actor) {
+      throw new Unauthorized()
+    }
+    let result: Output extends Type ? Output["infer"] : Undefined
+    try {
+      result = await execute(valid as any, context)
+    } catch (error) {
+      throw mapDomainError(error)
+    }
     if (output) {
       const validOutput = output(result)
       if (validOutput instanceof type.errors) {
@@ -65,4 +83,21 @@ export type OperationHandler<
 > = RequestHandler & {
   input: Input
   output: Output
+}
+
+function mapDomainError(error: unknown): unknown {
+  if (!(error instanceof DomainError)) {
+    return error
+  }
+  switch (error.code) {
+    case "not-found":
+      return new NotFound(error.message)
+    case "invalid":
+      return new InvalidRequest(error.message)
+    case "forbidden":
+      return new RouterError(403, error.message)
+    case "conflict":
+    case "not-empty":
+      return new RouterError(409, error.message)
+  }
 }

@@ -1,4 +1,4 @@
-import { BoardsOperation } from "$/api/boards/BoardsOperation"
+import type { Actor } from "$/authorization/Actor"
 import { operation } from "$/framework/operation"
 import type { Boards } from "$/services/Boards"
 import { BoardTask, ID } from "shared/models"
@@ -6,6 +6,7 @@ import { type } from "arktype"
 
 export const get = operation(
   {
+    loggedIn: true,
     input: type({
       workspace: "string > 0",
       board: "string > 0",
@@ -14,13 +15,10 @@ export const get = operation(
     output: BoardTask,
   },
   async ({ workspace, board, task }, context: Context) =>
-    BoardsOperation.run(context, (actor) =>
-      context.boards.getTask(actor, workspace, board, task),
-    ),
+    context.boards.getTask(context.actor, workspace, board, task),
 )
 
 type Context = {
-  user?: { id: number } | null
-  groups?: readonly string[] | null
+  actor: Actor
   boards: Boards
 }
