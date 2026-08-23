@@ -1,12 +1,13 @@
 import type { Actor } from "$/authorization/Actor"
 import { operation } from "$/framework/operation"
+import { requireLogin } from "$/framework/requireLogin"
 import type { Boards } from "$/services/Boards"
 import { BoardPhase, ID } from "shared/models"
 import { type } from "arktype"
 
 export const move = operation(
   {
-    loggedIn: true,
+    checks: [requireLogin],
     input: type({
       workspace: "string > 0",
       board: "string > 0",

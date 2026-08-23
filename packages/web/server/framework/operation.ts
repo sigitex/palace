@@ -1,12 +1,10 @@
 // oxlint-disable typescript/no-explicit-any typescript/no-invalid-void-type
-import type { Actor } from "$/authorization/Actor"
 import { DomainError } from "$/errors/DomainError"
 import {
   InvalidRequest,
   NotFound,
   RouterError,
   ServerError,
-  Unauthorized,
   type RequestContext,
   type RequestHandler,
 } from "@sigitex/route"
@@ -18,12 +16,14 @@ export type Operations = {
   [key: string]: OperationHandler<Type, Type> | Operations
 }
 
+export type OperationCheck = (context: any) => void | Promise<void>
+
 export type OperationParams<
   Input extends Type | undefined,
   Output extends Type | undefined,
 > = {
+  checks?: readonly OperationCheck[]
   input?: Input
-  loggedIn?: true
   output?: Output
 }
 
@@ -31,7 +31,7 @@ export function operation<
   Input extends Type | undefined,
   Output extends Type | undefined,
 >(
-  { input, loggedIn, output }: OperationParams<Input, Output>,
+  { checks, input, output }: OperationParams<Input, Output>,
 
   execute: (
     input: Input extends Type ? Input["infer"] : any,
@@ -41,9 +41,7 @@ export function operation<
   Input extends Type ? Input : Undefined,
   Output extends Type ? Output : Undefined
 > {
-  const handler = async (
-    context: RequestContext & { actor?: Actor | null },
-  ) => {
+  const handler = async (context: RequestContext) => {
     let raw: unknown
     try {
       raw = await context.request.json()
@@ -54,11 +52,11 @@ export function operation<
     if (valid instanceof type.errors) {
       throw new InvalidRequest("Invalid parameters.")
     }
-    if (loggedIn && !context.actor) {
-      throw new Unauthorized()
-    }
     let result: Output extends Type ? Output["infer"] : Undefined
     try {
+      for (const check of checks ?? []) {
+        await check(context)
+      }
       result = await execute(valid as any, context)
     } catch (error) {
       throw mapDomainError(error)

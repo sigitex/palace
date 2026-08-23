@@ -1,12 +1,13 @@
 import type { Actor } from "$/authorization/Actor"
 import { operation } from "$/framework/operation"
+import { requireLogin } from "$/framework/requireLogin"
 import type { Workspaces } from "$/services/Workspaces"
 import { ID, WorkspaceAccess, WorkspaceAccessLevel } from "shared/models"
 import { type } from "arktype"
 
 export const accessSet = operation(
   {
-    loggedIn: true,
+    checks: [requireLogin],
     input: type({
       workspace: "string > 0",
       group: ID,
