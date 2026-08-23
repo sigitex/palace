@@ -24,7 +24,12 @@ import { useLocation } from "wouter"
 import { path } from "shared/routes"
 import type { BoardAggregate, BoardTask } from "shared/models"
 
-export default function Board({ aggregate, taskID }: Board.Props) {
+type Props = {
+  aggregate: BoardAggregate
+  taskID?: number
+}
+
+export default function Board({ aggregate, taskID }: Props) {
   const { board, workspace, tasks } = aggregate
   const [, navigate] = useLocation()
   const boardID = board.id
@@ -175,13 +180,6 @@ export default function Board({ aggregate, taskID }: Board.Props) {
       )}
     </Stack>
   )
-}
-
-export namespace Board {
-  export type Props = {
-    aggregate: BoardAggregate
-    taskID?: number
-  }
 }
 
 function initialSelection(tasks: BoardTask[]) {

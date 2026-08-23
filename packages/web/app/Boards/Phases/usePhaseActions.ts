@@ -1,6 +1,6 @@
 import { useBoards } from "@/state"
-import type { TaskComposer } from "@/Boards/Task/TaskComposer"
-import type { TaskMenu } from "@/Boards/Task/TaskMenu"
+import type { TaskComposerInput } from "@/Boards/Task/TaskComposer"
+import type { TaskMenuDestination } from "@/Boards/Task/TaskMenu"
 
 export type PhaseActions = ReturnType<typeof usePhaseActions>
 
@@ -11,7 +11,7 @@ export function usePhaseActions(ws: string, board: string) {
   return {
     moveTask(
       task: number,
-      destination: TaskMenu.Destination,
+      destination: TaskMenuDestination,
       anchors: {
         before?: number | null
         after?: number | null
@@ -25,7 +25,7 @@ export function usePhaseActions(ws: string, board: string) {
         ...anchors,
       })
     },
-    createTask(input: TaskComposer.Input) {
+    createTask(input: TaskComposerInput) {
       return boards.createTask(ws, board, input)
     },
   }

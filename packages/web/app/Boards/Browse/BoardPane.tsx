@@ -10,6 +10,19 @@ import { useLocation } from "wouter"
 import { path } from "shared/routes"
 import type { Board, Workspace } from "shared/models"
 
+type Props = {
+  boardList: Board[]
+  selected: Workspace | undefined
+  canWrite: boolean
+  canManage: boolean
+  draft: "workspace" | "board" | null
+  renamingBoard: string | null
+  onKeyDown: KeyboardEventHandler<HTMLDivElement>
+  setDraft: (value: "workspace" | "board" | null) => void
+  setRenamingBoard: (value: string | null) => void
+  onOpenSettings: () => void
+}
+
 export function BoardPane({
   boardList,
   selected,
@@ -21,7 +34,7 @@ export function BoardPane({
   setDraft,
   setRenamingBoard,
   onOpenSettings,
-}: BoardPane.Props) {
+}: Props) {
   const [, navigate] = useLocation()
   const boards = useBoards()
   return (
@@ -110,19 +123,4 @@ export function BoardPane({
       )}
     </Stack>
   )
-}
-
-export namespace BoardPane {
-  export type Props = {
-    boardList: Board[]
-    selected: Workspace | undefined
-    canWrite: boolean
-    canManage: boolean
-    draft: "workspace" | "board" | null
-    renamingBoard: string | null
-    onKeyDown: KeyboardEventHandler<HTMLDivElement>
-    setDraft: (value: "workspace" | "board" | null) => void
-    setRenamingBoard: (value: string | null) => void
-    onOpenSettings: () => void
-  }
 }

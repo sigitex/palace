@@ -11,12 +11,25 @@ import { useState } from "react"
 import { Icon } from "@/common/Icon"
 import type { BoardColor, BoardIcon, BoardPhase } from "shared/models"
 
+type PhaseComposerInput = {
+  title: string
+  color: BoardColor
+  icon: BoardIcon | null
+}
+
+type Props = {
+  creating: boolean
+  onCreate: (input: PhaseComposerInput) => Promise<BoardPhase>
+  onCreated: (phase: BoardPhase) => void
+  onCancel: () => void
+}
+
 export function PhaseComposer({
   creating,
   onCreate,
   onCreated,
   onCancel,
-}: PhaseComposer.Props) {
+}: Props) {
   const [title, setTitle] = useState("")
   const [color, setColor] = useState<BoardColor | null>("blue")
   const [icon, setIcon] = useState<BoardIcon | null>(null)
@@ -81,19 +94,4 @@ export function PhaseComposer({
       </Stack>
     </Paper>
   )
-}
-
-export namespace PhaseComposer {
-  export type Input = {
-    title: string
-    color: BoardColor
-    icon: BoardIcon | null
-  }
-
-  export type Props = {
-    creating: boolean
-    onCreate: (input: Input) => Promise<BoardPhase>
-    onCreated: (phase: BoardPhase) => void
-    onCancel: () => void
-  }
 }

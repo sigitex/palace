@@ -1,5 +1,5 @@
 import type { TaskCardCommands } from "@/Boards/Phases/TaskCard"
-import type { TaskComposer } from "@/Boards/Task/TaskComposer"
+import type { TaskComposerInput } from "@/Boards/Task/TaskComposer"
 import type {
   BoardColor,
   BoardIcon as BoardIconKey,
@@ -11,7 +11,7 @@ export type PhaseLaneCommands = TaskCardCommands & {
   movePhase: (phaseID: number, direction: -1 | 1) => void
   openTaskComposer: (phase: number | null) => void
   closeTaskComposer: () => void
-  createTask: (input: TaskComposer.Input) => Promise<BoardTask>
+  createTask: (input: TaskComposerInput) => Promise<BoardTask>
   savePhase: (
     phaseID: number,
     metadata: {

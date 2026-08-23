@@ -10,6 +10,20 @@ import { useBoardsView } from "@/state"
 import { Stack, Text } from "@mantine/core"
 import type { BoardPhase } from "shared/models"
 
+type Props = {
+  lane: Lane
+  phases: BoardPhase[]
+  writable: boolean
+  selectedTask: number | null
+  selectedNewTask: string | null
+  editingTask: number | null
+  taskComposerOpen: boolean
+  creatingTask: boolean
+  movingTask: number | null
+  taskDragHandles: ReadonlyMap<number, usePointerDrag.Handle>
+  commands: PhaseLaneCommands
+}
+
 // A lane's scrollable task cards, followed by the empty-state text and the
 // sticky footer that hosts the task composer or the new-task entry.
 export function PhaseLaneTasks({
@@ -24,7 +38,7 @@ export function PhaseLaneTasks({
   movingTask,
   taskDragHandles,
   commands,
-}: PhaseLaneTasks.Props) {
+}: Props) {
   const view = useBoardsView()
   return (
     <Stack
@@ -79,20 +93,4 @@ export function PhaseLaneTasks({
       )}
     </Stack>
   )
-}
-
-export namespace PhaseLaneTasks {
-  export type Props = {
-    lane: Lane
-    phases: BoardPhase[]
-    writable: boolean
-    selectedTask: number | null
-    selectedNewTask: string | null
-    editingTask: number | null
-    taskComposerOpen: boolean
-    creatingTask: boolean
-    movingTask: number | null
-    taskDragHandles: ReadonlyMap<number, usePointerDrag.Handle>
-    commands: PhaseLaneCommands
-  }
 }

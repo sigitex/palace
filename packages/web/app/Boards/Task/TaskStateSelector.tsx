@@ -4,12 +4,21 @@ import { Group, Menu, Text, UnstyledButton } from "@mantine/core"
 import { Icon } from "@/common/Icon"
 import type { BoardPhase, BoardTask } from "shared/models"
 
+export type TaskStateSelectorValue = Pick<BoardTask, "complete" | "phase">
+
+type Props = {
+  phases: BoardPhase[]
+  task: BoardTask
+  writable: boolean
+  onChange: (value: TaskStateSelectorValue) => void
+}
+
 export function TaskStateSelector({
   phases,
   task,
   writable,
   onChange,
-}: TaskStateSelector.Props) {
+}: Props) {
   const phase = phases.find(({ id }) => id === task.phase)
   const selected = task.complete ? null : phase
   const label = task.complete
@@ -87,15 +96,4 @@ export function TaskStateSelector({
       </Menu.Dropdown>
     </Menu>
   )
-}
-
-export namespace TaskStateSelector {
-  export type Value = Pick<BoardTask, "complete" | "phase">
-
-  export type Props = {
-    phases: BoardPhase[]
-    task: BoardTask
-    writable: boolean
-    onChange: (value: Value) => void
-  }
 }

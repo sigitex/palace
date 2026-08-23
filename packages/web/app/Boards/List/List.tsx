@@ -11,7 +11,12 @@ import { Stack } from "@mantine/core"
 import { useState } from "react"
 import type { BoardAggregate } from "shared/models"
 
-export default function List({ aggregate, onOpen }: List.Props) {
+type Props = {
+  aggregate: BoardAggregate
+  onOpen: (taskID: number) => void
+}
+
+export default function List({ aggregate, onOpen }: Props) {
   const { workspace, board, phases, tasks } = aggregate
   const state = useBoardsView()
   const writable =
@@ -58,11 +63,4 @@ export default function List({ aggregate, onOpen }: List.Props) {
       />
     </Stack>
   )
-}
-
-export namespace List {
-  export type Props = {
-    aggregate: BoardAggregate
-    onOpen: (taskID: number) => void
-  }
 }

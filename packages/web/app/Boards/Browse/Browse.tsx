@@ -7,11 +7,17 @@ import { useBoardsView, useSession } from "@/state"
 import { useEffect, useState } from "react"
 import type { Board, Workspace } from "shared/models"
 
+type Props = {
+  workspaces: Workspace[]
+  boardList: Board[]
+  selectedWorkspace?: string
+}
+
 export default function Browse({
   workspaces,
   boardList,
   selectedWorkspace,
-}: Browse.Props) {
+}: Props) {
   const session = useSession()
   const view = useBoardsView()
   const [workspaceSettings, setWorkspaceSettings] = useState(false)
@@ -105,12 +111,4 @@ export default function Browse({
       )}
     </>
   )
-}
-
-export namespace Browse {
-  export type Props = {
-    workspaces: Workspace[]
-    boardList: Board[]
-    selectedWorkspace?: string
-  }
 }

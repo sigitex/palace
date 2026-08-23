@@ -23,11 +23,17 @@ import type {
   WorkspaceAccessLevel,
 } from "shared/models"
 
+type Props = {
+  workspace: Workspace
+  opened: boolean
+  onClose: () => void
+}
+
 export function WorkspaceDrawer({
   workspace,
   opened,
   onClose,
-}: WorkspaceDrawer.Props) {
+}: Props) {
   const [, navigate] = useLocation()
   const [name, setName] = useState(workspace.name)
   const [slug, setSlug] = useState(workspace.slug)
@@ -209,14 +215,6 @@ export function WorkspaceDrawer({
       </Stack>
     </Drawer>
   )
-}
-
-export namespace WorkspaceDrawer {
-  export type Props = {
-    workspace: Workspace
-    opened: boolean
-    onClose: () => void
-  }
 }
 
 const accessLevels = [

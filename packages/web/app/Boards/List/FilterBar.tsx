@@ -5,9 +5,13 @@ import { Button, Group, TextInput } from "@mantine/core"
 import { Icon } from "@/common/Icon"
 import type { BoardPhase } from "shared/models"
 
+type Props = {
+  phases: BoardPhase[]
+}
+
 // Search field plus the projection filters (All / Incomplete / per-phase /
 // Complete) that drive which tasks the list shows.
-export function FilterBar({ phases }: FilterBar.Props) {
+export function FilterBar({ phases }: Props) {
   const state = useBoardsView()
   return (
     <Group
@@ -59,10 +63,12 @@ export function FilterBar({ phases }: FilterBar.Props) {
   )
 }
 
-export namespace FilterBar {
-  export type Props = {
-    phases: BoardPhase[]
-  }
+type FilterButtonProps = {
+  active: boolean
+  label: string
+  icon?: React.ReactNode
+  color?: string
+  onClick: () => void
 }
 
 function FilterButton({
@@ -71,7 +77,7 @@ function FilterButton({
   icon,
   color,
   onClick,
-}: FilterButton.Props) {
+}: FilterButtonProps) {
   return (
     <Button
       size="compact-sm"
@@ -87,14 +93,4 @@ function FilterButton({
       {label}
     </Button>
   )
-}
-
-namespace FilterButton {
-  export type Props = {
-    active: boolean
-    label: string
-    icon?: React.ReactNode
-    color?: string
-    onClick: () => void
-  }
 }

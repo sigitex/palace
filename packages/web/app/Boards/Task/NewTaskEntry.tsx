@@ -1,10 +1,15 @@
 import classes from "@/Boards/Task/NewTaskEntry.module.css"
 import { Icon } from "@/common/Icon"
 
+type Props = {
+  selected: boolean
+  onActivate: () => void
+}
+
 export function NewTaskEntry({
   selected,
   onActivate,
-}: NewTaskEntry.Props) {
+}: Props) {
   return (
     <div
       role="option"
@@ -25,11 +30,4 @@ export function NewTaskEntry({
       Add task
     </div>
   )
-}
-
-export namespace NewTaskEntry {
-  export type Props = {
-    selected: boolean
-    onActivate: () => void
-  }
 }

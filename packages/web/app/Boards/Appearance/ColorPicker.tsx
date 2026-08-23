@@ -8,11 +8,17 @@ import {
 import { Icon } from "@/common/Icon"
 import { BOARD_COLORS, type BoardColor } from "shared/models"
 
+type Props = {
+  color: BoardColor | null
+  onChange: (color: BoardColor | null) => void
+  required?: boolean
+}
+
 export function ColorPicker({
   color,
   onChange,
   required = false,
-}: ColorPicker.Props) {
+}: Props) {
   return (
     <Input.Wrapper label="Color">
       <Group gap="xs" mt={4}>
@@ -45,14 +51,6 @@ export function ColorPicker({
       </Group>
     </Input.Wrapper>
   )
-}
-
-export namespace ColorPicker {
-  export type Props = {
-    color: BoardColor | null
-    onChange: (color: BoardColor | null) => void
-    required?: boolean
-  }
 }
 
 function title(value: string) {

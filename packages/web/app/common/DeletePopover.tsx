@@ -1,11 +1,17 @@
 import { Button, Group, Popover, Stack, Text } from "@mantine/core"
 import { useState, type ReactNode } from "react"
 
+type Props = {
+  label: string
+  onDelete: () => Promise<unknown>
+  children: ReactNode
+}
+
 export function DeletePopover({
   label,
   onDelete,
   children,
-}: DeletePopover.Props) {
+}: Props) {
   const [opened, setOpened] = useState(false)
 
   return (
@@ -42,12 +48,4 @@ export function DeletePopover({
       </Popover.Dropdown>
     </Popover>
   )
-}
-
-export namespace DeletePopover {
-  export type Props = {
-    label: string
-    onDelete: () => Promise<unknown>
-    children: ReactNode
-  }
 }

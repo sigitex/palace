@@ -4,12 +4,23 @@ import { Button, Group, Stack, TextInput } from "@mantine/core"
 import { useState } from "react"
 import type { BoardColor, BoardIcon, BoardPhase } from "shared/models"
 
+type Props = {
+  phase: BoardPhase
+  onSave: (metadata: {
+    title: string
+    color: BoardColor
+    icon: BoardIcon | null
+  }) => Promise<unknown>
+  onDelete: () => Promise<unknown>
+  onCancel: () => void
+}
+
 export function InlinePhaseEditor({
   phase,
   onSave,
   onDelete,
   onCancel,
-}: InlinePhaseEditor.Props) {
+}: Props) {
   const [title, setTitle] = useState(phase.title)
   const [color, setColor] = useState<BoardColor | null>(phase.color)
   const [icon, setIcon] = useState<BoardIcon | null>(phase.icon)
@@ -61,17 +72,4 @@ export function InlinePhaseEditor({
       </Group>
     </Stack>
   )
-}
-
-export namespace InlinePhaseEditor {
-  export type Props = {
-    phase: BoardPhase
-    onSave: (metadata: {
-      title: string
-      color: BoardColor
-      icon: BoardIcon | null
-    }) => Promise<unknown>
-    onDelete: () => Promise<unknown>
-    onCancel: () => void
-  }
 }

@@ -3,6 +3,15 @@ import { BoardIcon } from "@/common/BoardIcon"
 import { Group, Text } from "@mantine/core"
 import type { Board, Workspace } from "shared/models"
 
+type Props = {
+  resource: Workspace | Board
+  selected?: boolean
+  dataBoard?: string
+  dataWorkspace?: string
+  tinted?: boolean
+  onOpen: () => void
+}
+
 export function ResourceButton({
   resource,
   selected = false,
@@ -10,7 +19,7 @@ export function ResourceButton({
   dataWorkspace,
   tinted = false,
   onOpen,
-}: ResourceButton.Props) {
+}: Props) {
   return (
     <button
       type="button"
@@ -48,15 +57,4 @@ export function ResourceButton({
       </Group>
     </button>
   )
-}
-
-export namespace ResourceButton {
-  export type Props = {
-    resource: Workspace | Board
-    selected?: boolean
-    dataBoard?: string
-    dataWorkspace?: string
-    tinted?: boolean
-    onOpen: () => void
-  }
 }

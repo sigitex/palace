@@ -7,6 +7,16 @@ import type { usePointerDrag } from "@/common/usePointerDrag"
 import { useBoards, useBoardsView } from "@/state"
 import type { BoardPhase } from "shared/models"
 
+type Props = {
+  lanes: Lane[]
+  phases: BoardPhase[]
+  writable: boolean
+  editingTask: number | null
+  taskDragHandles: ReadonlyMap<number, usePointerDrag.Handle>
+  phaseDragHandles: ReadonlyMap<number, usePointerDrag.Handle>
+  commands: PhaseLaneCommands
+}
+
 // The horizontal, auto-scrolling strip of phase lanes. Derives each lane's
 // selection/edit/composer flags from the board view store.
 export function PhaseStrip({
@@ -17,7 +27,7 @@ export function PhaseStrip({
   taskDragHandles,
   phaseDragHandles,
   commands,
-}: PhaseStrip.Props) {
+}: Props) {
   const state = useBoardsView()
   const boards = useBoards()
   return (
@@ -68,16 +78,4 @@ export function PhaseStrip({
       </div>
     </div>
   )
-}
-
-export namespace PhaseStrip {
-  export type Props = {
-    lanes: Lane[]
-    phases: BoardPhase[]
-    writable: boolean
-    editingTask: number | null
-    taskDragHandles: ReadonlyMap<number, usePointerDrag.Handle>
-    phaseDragHandles: ReadonlyMap<number, usePointerDrag.Handle>
-    commands: PhaseLaneCommands
-  }
 }

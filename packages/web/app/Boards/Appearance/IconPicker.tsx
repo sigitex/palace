@@ -16,13 +16,19 @@ import { Icon } from "@/common/Icon"
 import { BoardIconCatalog } from "shared/models/BoardIconCatalog"
 import type { BoardIcon as BoardIconKey } from "shared/models"
 
+type Props = {
+  icon: BoardIconKey | null
+  onChange: (icon: BoardIconKey | null) => void
+  required?: boolean
+}
+
 const PAGE_SIZE = 48
 
 export function IconPicker({
   icon,
   onChange,
   required = false,
-}: IconPicker.Props) {
+}: Props) {
   const [opened, setOpened] = useState(false)
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
@@ -124,14 +130,6 @@ export function IconPicker({
       </Group>
     </Input.Wrapper>
   )
-}
-
-export namespace IconPicker {
-  export type Props = {
-    icon: BoardIconKey | null
-    onChange: (icon: BoardIconKey | null) => void
-    required?: boolean
-  }
 }
 
 function title(value: string) {

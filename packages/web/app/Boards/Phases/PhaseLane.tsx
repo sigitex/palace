@@ -9,7 +9,7 @@ import { Paper } from "@mantine/core"
 import { memo } from "react"
 import type { BoardPhase } from "shared/models"
 
-export type PhaseLaneProps = {
+type Props = {
   lane: Lane
   phases: BoardPhase[]
   writable: boolean
@@ -40,7 +40,7 @@ export const PhaseLane = memo(
     phaseDragHandle,
     taskDragHandles,
     commands,
-  }: PhaseLaneProps) => {
+  }: Props) => {
     const laneStyle = {
       "--lane-color": lane.phase
         ? `var(--mantine-color-${lane.phase.color}-6)`

@@ -1,7 +1,13 @@
 import classes from "@/Boards/List/List.module.css"
 import { DeletePopover } from "@/common/DeletePopover"
-import { TaskMenu } from "@/Boards/Task/TaskMenu"
-import { TaskStateSelector } from "@/Boards/Task/TaskStateSelector"
+import {
+  TaskMenu,
+  type TaskMenuDestination,
+} from "@/Boards/Task/TaskMenu"
+import {
+  TaskStateSelector,
+  type TaskStateSelectorValue,
+} from "@/Boards/Task/TaskStateSelector"
 import type { usePointerDrag } from "@/common/usePointerDrag"
 import {
   ActionIcon,
@@ -21,15 +27,15 @@ export type TaskRowCommands = {
   saveTitle: (taskID: number, title: string) => Promise<unknown>
   setState: (
     taskID: number,
-    state: TaskStateSelector.Value,
+    state: TaskStateSelectorValue,
   ) => Promise<unknown>
   setComplete: (taskID: number, complete: boolean) => Promise<unknown>
-  move: (taskID: number, destination: TaskMenu.Destination) => void
+  move: (taskID: number, destination: TaskMenuDestination) => void
   step: (taskID: number, direction: -1 | 1) => void
   delete: (taskID: number) => Promise<unknown>
 }
 
-export type TaskRowProps = {
+type Props = {
   task: BoardTask
   phases: BoardAggregate["phases"]
   writable: boolean
@@ -48,7 +54,7 @@ export const TaskRow = memo(
     editing,
     dragHandle,
     commands,
-  }: TaskRowProps) => {
+  }: Props) => {
     const phase = phases.find(({ id }) => id === task.phase)
     const [optimisticComplete, setOptimisticComplete] = useState<
       boolean | null

@@ -4,12 +4,19 @@ import { Group, Menu, Text, UnstyledButton } from "@mantine/core"
 import { Icon } from "@/common/Icon"
 import type { BoardPhase } from "shared/models"
 
+type Props = {
+  phases: BoardPhase[]
+  phase: number | null
+  writable: boolean
+  onChange: (phase: number | null) => void
+}
+
 export function PhaseSelector({
   phases,
   phase,
   writable,
   onChange,
-}: PhaseSelector.Props) {
+}: Props) {
   const selected = phases.find(({ id }) => id === phase)
   const control = (
     <UnstyledButton
@@ -70,13 +77,4 @@ export function PhaseSelector({
       </Menu.Dropdown>
     </Menu>
   )
-}
-
-export namespace PhaseSelector {
-  export type Props = {
-    phases: BoardPhase[]
-    phase: number | null
-    writable: boolean
-    onChange: (phase: number | null) => void
-  }
 }

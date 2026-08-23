@@ -6,6 +6,13 @@ import type { usePointerDrag } from "@/common/usePointerDrag"
 import { ActionIcon, Group, Text, Tooltip } from "@mantine/core"
 import { Icon } from "@/common/Icon"
 
+type Props = {
+  lane: Lane
+  writable: boolean
+  phaseDragHandle?: usePointerDrag.Handle
+  commands: PhaseLaneCommands
+}
+
 // A lane's title row: drag handle, phase/status icon, title, task count, and
 // the edit-phase / add-task actions.
 export function PhaseLaneHeader({
@@ -13,7 +20,7 @@ export function PhaseLaneHeader({
   writable,
   phaseDragHandle,
   commands,
-}: PhaseLaneHeader.Props) {
+}: Props) {
   return (
     <Group justify="space-between" wrap="nowrap" mb="sm">
       <Group gap="xs" wrap="nowrap" className={classes.phaseTitle}>
@@ -82,13 +89,4 @@ export function PhaseLaneHeader({
       </Group>
     </Group>
   )
-}
-
-export namespace PhaseLaneHeader {
-  export type Props = {
-    lane: Lane
-    writable: boolean
-    phaseDragHandle?: usePointerDrag.Handle
-    commands: PhaseLaneCommands
-  }
 }

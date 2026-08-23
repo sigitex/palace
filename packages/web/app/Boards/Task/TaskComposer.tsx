@@ -10,6 +10,21 @@ import { useState } from "react"
 import { Icon } from "@/common/Icon"
 import type { BoardPhase, BoardTask } from "shared/models"
 
+export type TaskComposerInput = {
+  title: string
+  phase: number | null
+}
+
+type Props = {
+  phases: BoardPhase[]
+  defaultPhase?: number | null
+  showPhase?: boolean
+  creating: boolean
+  onCreate: (input: TaskComposerInput) => Promise<BoardTask>
+  onCreated: (task: BoardTask) => void
+  onCancel: () => void
+}
+
 export function TaskComposer({
   phases,
   defaultPhase = null,
@@ -18,7 +33,7 @@ export function TaskComposer({
   onCreate,
   onCreated,
   onCancel,
-}: TaskComposer.Props) {
+}: Props) {
   const [title, setTitle] = useState("")
   const [phase, setPhase] = useState<number | null>(defaultPhase)
 
@@ -82,21 +97,4 @@ export function TaskComposer({
       </Group>
     </Paper>
   )
-}
-
-export namespace TaskComposer {
-  export type Input = {
-    title: string
-    phase: number | null
-  }
-
-  export type Props = {
-    phases: BoardPhase[]
-    defaultPhase?: number | null
-    showPhase?: boolean
-    creating: boolean
-    onCreate: (input: Input) => Promise<BoardTask>
-    onCreated: (task: BoardTask) => void
-    onCancel: () => void
-  }
 }

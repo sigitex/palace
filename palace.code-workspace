@@ -1,13 +1,9 @@
 {
 	"folders": [
 		{
-			"name": "project",
-			"path": "../palace.project",
-		},
-		{
-			"name": "repo",
-			"path": ".",
-		},
+			"name": "palace",
+			"path": "."
+		}
 	],
 	"settings": {
 		"oxc.path.oxfmt": "node_modules/.bin/oxfmt",

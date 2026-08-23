@@ -6,6 +6,15 @@ import type {
   BoardIcon as BoardIconKey,
 } from "shared/models"
 
+type Props = {
+  color: BoardColor | null
+  icon: BoardIconKey | null
+  onColorChange: (color: BoardColor | null) => void
+  onIconChange: (icon: BoardIconKey | null) => void
+  colorRequired?: boolean
+  iconRequired?: boolean
+}
+
 export default function Appearance({
   color,
   icon,
@@ -13,7 +22,7 @@ export default function Appearance({
   onIconChange,
   colorRequired = false,
   iconRequired = false,
-}: Appearance.Props) {
+}: Props) {
   return (
     <Group grow align="flex-start">
       <ColorPicker
@@ -28,15 +37,4 @@ export default function Appearance({
       />
     </Group>
   )
-}
-
-export namespace Appearance {
-  export type Props = {
-    color: BoardColor | null
-    icon: BoardIconKey | null
-    onColorChange: (color: BoardColor | null) => void
-    onIconChange: (icon: BoardIconKey | null) => void
-    colorRequired?: boolean
-    iconRequired?: boolean
-  }
 }

@@ -12,7 +12,12 @@ import { Stack } from "@mantine/core"
 import { useMemo, useState } from "react"
 import type { BoardAggregate } from "shared/models"
 
-export default function Phases({ aggregate, onOpen }: Phases.Props) {
+type Props = {
+  aggregate: BoardAggregate
+  onOpen: (taskID: number) => void
+}
+
+export default function Phases({ aggregate, onOpen }: Props) {
   const { workspace, board, phases, tasks } = aggregate
   const state = useBoardsView()
   const boards = useBoards()
@@ -82,11 +87,4 @@ export default function Phases({ aggregate, onOpen }: Phases.Props) {
       />
     </Stack>
   )
-}
-
-export namespace Phases {
-  export type Props = {
-    aggregate: BoardAggregate
-    onOpen: (taskID: number) => void
-  }
 }

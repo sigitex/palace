@@ -1,6 +1,13 @@
 import { TextInput } from "@mantine/core"
 import { useState } from "react"
 
+type Props = {
+  label: string
+  initial?: string
+  onSave: (name: string) => Promise<void>
+  onCancel: () => void
+}
+
 // A single-field inline editor for naming/renaming a workspace or board:
 // Enter commits a non-empty trimmed name, Escape cancels.
 export function InlineName({
@@ -8,7 +15,7 @@ export function InlineName({
   initial = "",
   onSave,
   onCancel,
-}: InlineName.Props) {
+}: Props) {
   const [name, setName] = useState(initial)
   return (
     <TextInput
@@ -24,13 +31,4 @@ export function InlineName({
       }}
     />
   )
-}
-
-export namespace InlineName {
-  export type Props = {
-    label: string
-    initial?: string
-    onSave: (name: string) => Promise<void>
-    onCancel: () => void
-  }
 }

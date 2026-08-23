@@ -9,6 +9,17 @@ import { useBoards, useBoardsView } from "@/state"
 import { Stack, Text } from "@mantine/core"
 import type { BoardPhase, BoardTask } from "shared/models"
 
+type Props = {
+  ws: string
+  board: string
+  visible: BoardTask[]
+  phases: BoardPhase[]
+  writable: boolean
+  editing: number | null
+  dragHandles: ReadonlyMap<number, usePointerDrag.Handle>
+  commands: TaskRowCommands
+}
+
 // The scrollable listbox of task rows, with the empty-state message and the
 // sticky footer that hosts either the task composer or the new-task entry.
 export function TaskList({
@@ -20,7 +31,7 @@ export function TaskList({
   editing,
   dragHandles,
   commands,
-}: TaskList.Props) {
+}: Props) {
   const state = useBoardsView()
   const boards = useBoards()
   return (
@@ -75,17 +86,4 @@ export function TaskList({
       )}
     </Stack>
   )
-}
-
-export namespace TaskList {
-  export type Props = {
-    ws: string
-    board: string
-    visible: BoardTask[]
-    phases: BoardPhase[]
-    writable: boolean
-    editing: number | null
-    dragHandles: ReadonlyMap<number, usePointerDrag.Handle>
-    commands: TaskRowCommands
-  }
 }

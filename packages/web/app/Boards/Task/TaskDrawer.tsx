@@ -19,12 +19,18 @@ import { useLocation } from "wouter"
 import { path } from "shared/routes"
 import type { BoardAggregate, BoardTask } from "shared/models"
 
+type Props = {
+  aggregate: BoardAggregate
+  taskID: number
+  onDeleted: (taskID: number) => void
+}
+
 // oxlint-disable-next-line eslint/complexity
 export function TaskDrawer({
   aggregate,
   taskID,
   onDeleted,
-}: TaskDrawer.Props) {
+}: Props) {
   const { workspace, board, phases, tasks } = aggregate
   const task = tasks.find(({ id }) => id === taskID)
   const boards = useBoards()
@@ -229,12 +235,4 @@ export function TaskDrawer({
       )}
     </Drawer>
   )
-}
-
-export namespace TaskDrawer {
-  export type Props = {
-    aggregate: BoardAggregate
-    taskID: number
-    onDeleted: (taskID: number) => void
-  }
 }

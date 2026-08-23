@@ -3,12 +3,23 @@ import { ActionIcon, Menu } from "@mantine/core"
 import { Icon } from "@/common/Icon"
 import type { BoardPhase, BoardTask } from "shared/models"
 
+export type TaskMenuDestination =
+  | { type: "phase"; phase: number | null }
+  | { type: "complete" }
+
+type Props = {
+  task: BoardTask
+  phases: BoardPhase[]
+  onMove: (destination: TaskMenuDestination) => void
+  onStep: (direction: -1 | 1) => void
+}
+
 export function TaskMenu({
   task,
   phases,
   onMove,
   onStep,
-}: TaskMenu.Props) {
+}: Props) {
   return (
     <Menu position="bottom-end" withinPortal>
       <Menu.Target>
@@ -62,17 +73,4 @@ export function TaskMenu({
       </Menu.Dropdown>
     </Menu>
   )
-}
-
-export namespace TaskMenu {
-  export type Destination =
-    | { type: "phase"; phase: number | null }
-    | { type: "complete" }
-
-  export type Props = {
-    task: BoardTask
-    phases: BoardPhase[]
-    onMove: (destination: Destination) => void
-    onStep: (direction: -1 | 1) => void
-  }
 }

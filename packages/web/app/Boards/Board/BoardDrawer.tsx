@@ -18,11 +18,17 @@ import type {
   BoardIcon,
 } from "shared/models"
 
+type Props = {
+  aggregate: BoardAggregate
+  opened: boolean
+  onClose: () => void
+}
+
 export function BoardDrawer({
   aggregate,
   opened,
   onClose,
-}: BoardDrawer.Props) {
+}: Props) {
   const { board, workspace } = aggregate
   const boards = useBoards()
   const [, navigate] = useLocation()
@@ -93,12 +99,4 @@ export function BoardDrawer({
       </Stack>
     </Drawer>
   )
-}
-
-export namespace BoardDrawer {
-  export type Props = {
-    aggregate: BoardAggregate
-    opened: boolean
-    onClose: () => void
-  }
 }

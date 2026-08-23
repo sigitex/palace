@@ -1,7 +1,10 @@
 import type { usePointerDrag } from "@/common/usePointerDrag"
 import classes from "@/Boards/Phases/Phases.module.css"
 import { DeletePopover } from "@/common/DeletePopover"
-import { TaskMenu } from "@/Boards/Task/TaskMenu"
+import {
+  TaskMenu,
+  type TaskMenuDestination,
+} from "@/Boards/Task/TaskMenu"
 import {
   ActionIcon,
   Group,
@@ -17,14 +20,14 @@ import type { BoardPhase, BoardTask } from "shared/models"
 export type TaskCardCommands = {
   select: (taskID: number) => void
   open: (taskID: number) => void
-  move: (taskID: number, destination: TaskMenu.Destination) => void
+  move: (taskID: number, destination: TaskMenuDestination) => void
   step: (taskID: number, lane: string, direction: -1 | 1) => void
   delete: (taskID: number) => Promise<unknown>
   saveTitle: (taskID: number, title: string) => Promise<unknown>
   cancelEdit: () => void
 }
 
-export type TaskCardProps = {
+type Props = {
   task: BoardTask
   phases: BoardPhase[]
   phase: BoardPhase | null
@@ -49,7 +52,7 @@ export const TaskCard = memo(
     moving,
     dragHandle,
     commands,
-  }: TaskCardProps) => {
+  }: Props) => {
     return (
       <Paper
         withBorder

@@ -3,7 +3,11 @@ import { useBoardsView } from "@/state"
 import { Button } from "@mantine/core"
 import { Icon } from "@/common/Icon"
 
-export function LaneControls({ writable }: LaneControls.Props) {
+type Props = {
+  writable: boolean
+}
+
+export function LaneControls({ writable }: Props) {
   const state = useBoardsView()
   return (
     <div className={classes.laneControls}>
@@ -48,10 +52,4 @@ export function LaneControls({ writable }: LaneControls.Props) {
       </Button>
     </div>
   )
-}
-
-export namespace LaneControls {
-  export type Props = {
-    writable: boolean
-  }
 }

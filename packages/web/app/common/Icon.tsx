@@ -1,6 +1,14 @@
 import type { CSSProperties, HTMLAttributes } from "react"
 import type { BoardIcon as IconName } from "shared/models"
 
+type Props = Omit<
+  HTMLAttributes<HTMLElement>,
+  "children"
+> & {
+  name: IconName
+  size?: CSSProperties["fontSize"]
+}
+
 /** Renders a Phosphor duotone glyph from the webfont loaded in `main.tsx`. */
 export function Icon({
   name,
@@ -8,7 +16,7 @@ export function Icon({
   className,
   style,
   ...props
-}: Icon.Props) {
+}: Props) {
   return (
     <i
       className={`ph-duotone ph-${name}${className ? ` ${className}` : ""}`}
@@ -16,14 +24,4 @@ export function Icon({
       {...props}
     />
   )
-}
-
-export namespace Icon {
-  export type Props = Omit<
-    HTMLAttributes<HTMLElement>,
-    "children"
-  > & {
-    name: IconName
-    size?: CSSProperties["fontSize"]
-  }
 }

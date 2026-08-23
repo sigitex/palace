@@ -1,4 +1,4 @@
-import type { TaskMenu } from "@/Boards/Task/TaskMenu"
+import type { TaskMenuDestination } from "@/Boards/Task/TaskMenu"
 import type {
   BoardAggregate,
   BoardPhase,
@@ -61,7 +61,7 @@ export namespace Lane {
   }
 
   // The move destination a task lands in when dropped into this lane.
-  export function destination(lane: Lane): TaskMenu.Destination {
+  export function destination(lane: Lane): TaskMenuDestination {
     return lane.complete
       ? { type: "complete" }
       : { type: "phase", phase: lane.phase?.id ?? null }

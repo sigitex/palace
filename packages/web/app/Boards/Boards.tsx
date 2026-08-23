@@ -5,11 +5,17 @@ import Browse from "@/Boards/Browse"
 import { useBoardData } from "@/Boards/useBoardData"
 import { Alert, Loader, Stack } from "@mantine/core"
 
+type Props = {
+  workspace?: string
+  board?: string
+  task?: number
+}
+
 export default function Boards({
   workspace,
   board,
   task,
-}: Boards.Props) {
+}: Props) {
   const data = useBoardData(workspace, board, task)
 
   if (data.status === "loading") {
@@ -54,12 +60,4 @@ export default function Boards({
       )}
     </Stack>
   )
-}
-
-export namespace Boards {
-  export type Props = {
-    workspace?: string
-    board?: string
-    task?: number
-  }
 }
