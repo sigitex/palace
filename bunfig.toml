@@ -1,0 +1,10 @@
+[install]
+# Only install package versions published at least 3 days ago
+minimumReleaseAge = 259200
+minimumReleaseAgeExcludes = [
+  "@sigitex/route",
+  "@sigitex/ssjs",
+  "@sigitex/outlaw",
+  "@sigitex/bind",
+  "typescript",
+]

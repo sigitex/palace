@@ -1,4 +1,4 @@
-list:
+help:
   just --list
 
 start:

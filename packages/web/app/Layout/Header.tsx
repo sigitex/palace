@@ -20,22 +20,6 @@ export default function Header() {
           nested
         />
       </Auth>
-      <Auth allow="finch">
-        <HeaderTab
-          to={routes.app.people}
-          label="People"
-          icon={Icons.People}
-        />
-      </Auth>
-      <Auth allow="finch">
-        <HeaderTab to="/budget" label="Budget" icon={Icons.Budget} />
-      </Auth>
-      <Auth allow="finch">
-        <HeaderTab to="/bots" label="Bots" icon={Icons.Bots} />
-      </Auth>
-      <Auth allow="finch">
-        <HeaderTab to="/photos" label="Photos" icon={Icons.Photos} />
-      </Auth>
       <Auth allow="palace-admins">
         <HeaderTab to="/admin" label="Admin" icon={Icons.Admin} />
       </Auth>

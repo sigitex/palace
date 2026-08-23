@@ -5,7 +5,6 @@ const boards = "/boards"
 export const routes = {
   app: {
     home: "/",
-    people: "/people",
     boards: {
       index: boards,
       workspace: `${boards}/:workspace`,

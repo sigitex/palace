@@ -5,11 +5,11 @@ import { container } from "$/container"
 import { Filter } from "$/framework/Filter"
 import { routes } from "shared/routes"
 import { api } from "$/api"
-import { configure } from "arktype"
+import { configure as configureArkType } from "arktype"
 import { operations } from "$/api/operations"
 import { session } from "$/framework/session"
 
-configure({ onUndeclaredKey: "delete" })
+configureArkType({ onUndeclaredKey: "delete" })
 
 export default {
   fetch: route(

@@ -32,9 +32,9 @@
   "dependencies": {
     "@phosphor-icons/web": "2.1.2",
     "@sigitex/bind": "^1.1.2",
-    "@sigitex/outlaw": "workspace:*",
-    "@sigitex/route": "workspace:*",
-    "@sigitex/ssjs": "workspace:*",
+    "@sigitex/outlaw": "^1.2.0",
+    "@sigitex/route": "^1.0.5",
+    "@sigitex/ssjs": "^1.2.0",
     "arktype": "^2.2.3",
     "nanoid": "^6.0.0",
     "react-markdown": "10.1.0"
