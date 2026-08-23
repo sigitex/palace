@@ -1,5 +1,5 @@
 import Home from "@/Home"
-import Family from "@/Family"
+import People from "@/People"
 import Boards from "@/Boards"
 import { routes } from "shared/routes"
 import { Route, Switch } from "wouter"
@@ -8,7 +8,7 @@ export default function Routes() {
   return (
     <Switch>
       <Route path={routes.app.home} component={Home} />
-      <Route path={routes.app.family} component={Family} />
+      <Route path={routes.app.people} component={People} />
       <Route path={routes.app.boards.task}>
         {(params) => (
           <Boards

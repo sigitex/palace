@@ -7,7 +7,11 @@ import { Icons } from "@/common/Icons";
 export default function Header() {
   return (
     <HeaderContainer>
-      <HeaderTab to={routes.app.home} label="Home" icon={Icons.Home} />
+      <HeaderTab
+        to={routes.app.home}
+        label="Home"
+        icon={Icons.Home}
+      />
       <Auth>
         <HeaderTab
           to={path.boards.index}
@@ -18,9 +22,9 @@ export default function Header() {
       </Auth>
       <Auth allow="finch">
         <HeaderTab
-          to={routes.app.family}
-          label="Family"
-          icon={Icons.Family}
+          to={routes.app.people}
+          label="People"
+          icon={Icons.People}
         />
       </Auth>
       <Auth allow="finch">

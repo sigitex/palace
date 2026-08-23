@@ -9,5 +9,5 @@ export const Icons = {
   Budget: "piggy-bank",
   Bots: "robot",
   Profile: "user",
-  Family: "users-four",
+  People: "users-four",
 } as const satisfies Record<string, IconName>

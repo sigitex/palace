@@ -142,7 +142,7 @@ describe("Boards services", () => {
     await context.workspaces.create(admin, workspace, 1)
     await context.workspaces.create(
       admin,
-      { ...workspace, name: "Family", slug: "family" },
+      { ...workspace, name: "People", slug: "people" },
       1,
     )
     await context.boards.create(admin, workspace.slug, board)

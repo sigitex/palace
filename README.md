@@ -5,7 +5,7 @@
 ## Planned Features
 
 - Calendar
-- Family
+- People
 - Budget
 - Bots
 - Photos

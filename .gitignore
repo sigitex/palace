@@ -5,6 +5,9 @@ node_modules
 dist
 packages/*/lib
 
+# Test config
+palace.config.toml
+
 # Database
 *.sqlite
 
