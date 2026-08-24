@@ -31,6 +31,6 @@ export class Users {
         return row?.uid
       }),
     )
-    return groups.filter((uid): uid is string => uid !== undefined).sort()
+    return groups.filter((uid): uid is string => uid !== undefined).toSorted()
   }
 }

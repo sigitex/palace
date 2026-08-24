@@ -11,6 +11,7 @@ export default defineConfig({
     restriction: "error",
   },
   rules: {
+    "one-var": "off",
     "capitalized-comments": "off",
     "default-case": "off",
     "filename-case": "off",
