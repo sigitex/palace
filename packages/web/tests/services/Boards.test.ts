@@ -146,7 +146,7 @@ describe("Boards services", () => {
       1,
     )
     await context.boards.create(admin, workspace.slug, board)
-    await context.boards.create(admin, "family", board)
+    await context.boards.create(admin, "people", board)
     await expect(
       context.boards.create(admin, workspace.slug, board),
     ).rejects.toMatchObject({ code: "conflict" })

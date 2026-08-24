@@ -1,3 +1,5 @@
+import { DomainError } from "$/errors/DomainError"
+
 export type Actor = {
   user: number
   groups: readonly string[]
@@ -8,5 +10,14 @@ export namespace Actor {
 
   export function isPalaceAdmin(actor: Actor) {
     return actor.groups.includes(PALACE_ADMINS)
+  }
+
+  export function requirePalaceAdmin(actor: Actor) {
+    if (!isPalaceAdmin(actor)) {
+      throw new DomainError(
+        "forbidden",
+        "Palace Administrator access is required.",
+      )
+    }
   }
 }
